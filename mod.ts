@@ -1,6 +1,38 @@
 export type BareItem = string | Integer | Decimal | boolean;
 
 /**
+ * Parameters is a key-value pair collection.
+ */
+export class Parameters {
+  private params: [string, BareItem][] = [];
+
+  get length(): number {
+    return this.params.length;
+  }
+
+  set(key: string, value: BareItem): void {
+    this.params = this.params.filter(([k]) => k !== key);
+    this.params.push([key, value]);
+  }
+
+  get(key: string): BareItem | undefined {
+    return this.params.find(([k]) => k === key)?.[1];
+  }
+
+  delete(key: string): void {
+    this.params = this.params.filter(([k]) => k !== key);
+  }
+
+  at(index: number): [string, BareItem] | undefined {
+    return this.params[index];
+  }
+
+  [Symbol.iterator]() {
+    return this.params[Symbol.iterator]();
+  }
+}
+
+/**
  * Integer is an integer number defined in RFC 8941 Section 3.3.1.
  */
 export class Integer {
