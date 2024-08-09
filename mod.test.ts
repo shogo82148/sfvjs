@@ -1,5 +1,47 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { Integer, Decimal } from "./mod.ts";
+import { Parameters, Integer, Decimal } from "./mod.ts";
+
+Deno.test("parameters", () => {
+  const params = new Parameters();
+  assertEquals(params.get("foo"), undefined);
+  assertEquals(params.get("baz"), undefined);
+  params.set("foo", "bar");
+  params.set("baz", "qux");
+
+  assertEquals(params.length, 2, "length");
+
+  // search values by keys
+  assertEquals(params.get("foo"), "bar");
+  assertEquals(params.get("baz"), "qux");
+
+  // search values by index
+  assertEquals(params.at(0), ["foo", "bar"]);
+  assertEquals(params.at(1), ["baz", "qux"]);
+
+  // iterate over values
+  const values = [...params];
+  assertEquals(values, [
+    ["foo", "bar"],
+    ["baz", "qux"],
+  ]);
+
+  // serialize to string
+  assertEquals(params.toString(), `;foo="bar";baz="qux"`);
+});
+
+Deno.test("parameters: set", () => {
+  const params = new Parameters();
+  params.set("a", "1");
+  params.set("b", "2");
+  params.set("a", "3");
+
+  // iterate over values
+  const values = [...params];
+  assertEquals(values, [
+    ["a", "3"],
+    ["b", "2"],
+  ]);
+});
 
 Deno.test("integer", () => {
   const i = new Integer(42);
