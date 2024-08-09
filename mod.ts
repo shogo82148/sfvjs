@@ -11,6 +11,7 @@ export class Parameters {
   }
 
   set(key: string, value: BareItem): void {
+    validateKey(key);
     this.params = this.params.filter(([k]) => k !== key);
     this.params.push([key, value]);
   }
@@ -30,6 +31,54 @@ export class Parameters {
   [Symbol.iterator]() {
     return this.params[Symbol.iterator]();
   }
+
+  toString(): string {
+    // RFC 8941 Section 4.1.1.2.
+    let output = "";
+    for (const [key, value] of this.params) {
+      output += ";";
+      output += encodeKey(key);
+      if (value === true) {
+        continue;
+      }
+      output += "=" + encodeBareItem(value);
+    }
+    return output;
+  }
+}
+
+function validateKey(key: string): void {
+  if (!/^[a-z*][-a-z0-9-_.*]*$/.test(key)) {
+    throw new TypeError("key contains invalid characters");
+  }
+}
+
+// encodeKey encodes the key in accordance with RFC 8941 Section 4.1.1.3.
+function encodeKey(key: string): string {
+  validateKey(key);
+  return key;
+}
+
+// encodeBareItem encodes the bare item in accordance with RFC 8941 Section 4.1.3.1.
+function encodeBareItem(value: BareItem): string {
+  if (value instanceof Integer) {
+    return value.toString();
+  }
+  if (value instanceof Decimal) {
+    return value.toString();
+  }
+  if (typeof value === "string") {
+    if (!/^[\x20-\x7e]*$/.test(value)) {
+      throw new TypeError("string contains invalid characters");
+    }
+    return `"${value.replace(/[\\"]/g, "\\$&")}"`;
+  }
+  // TODO: serialize Token
+  // TODO: serialize ByteSequence
+  if (typeof value === "boolean") {
+    return value ? "?1" : "?0";
+  }
+  throw new TypeError("unsupported value type");
 }
 
 /**

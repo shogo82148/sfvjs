@@ -24,6 +24,9 @@ Deno.test("parameters", () => {
     ["foo", "bar"],
     ["baz", "qux"],
   ]);
+
+  // serialize to string
+  assertEquals(params.toString(), `;foo="bar";baz="qux"`);
 });
 
 Deno.test("integer", () => {
