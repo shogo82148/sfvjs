@@ -1,4 +1,4 @@
-export type BareItem = string | Integer | Decimal | boolean;
+export type BareItem = Token | string | Integer | Decimal | boolean;
 
 /**
  * Parameters is a key-value pair collection.
@@ -76,9 +76,11 @@ function encodeBareItem(value: BareItem): string {
     if (!/^[\x20-\x7e]*$/.test(value)) {
       throw new TypeError("string contains invalid characters");
     }
-    return `"${value.replace(/[\\"]/g, "\\$&")}"`;
+    return `"${value.replace(/([\\"])/g, "\\$1")}"`;
   }
-  // TODO: serialize Token
+  if (value instanceof Token) {
+    return value.toString();
+  }
   // TODO: serialize ByteSequence
   if (typeof value === "boolean") {
     return value ? "?1" : "?0";
@@ -185,4 +187,28 @@ function roundToEven(value: number): number {
     return floor % 2 === 0 ? floor : floor + 1;
   }
   return Math.round(value);
+}
+
+export class Token {
+  private value: string;
+
+  constructor(value: string) {
+    validateToken(value);
+    this.value = value;
+  }
+
+  toString(): string {
+    // RFC 8941 Section 4.1.7.
+    return this.value;
+  }
+
+  valueOf(): string {
+    return this.value;
+  }
+}
+
+function validateToken(value: string): void {
+  if (!/^[a-zA-Z*][-0-9a-zA-Z!#$%&'*+.^_`|~:/]*$/.test(value)) {
+    throw new TypeError("token contains invalid characters");
+  }
 }
