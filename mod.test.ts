@@ -29,6 +29,20 @@ Deno.test("parameters", () => {
   assertEquals(params.toString(), `;foo="bar";baz="qux"`);
 });
 
+Deno.test("parameters: set", () => {
+  const params = new Parameters();
+  params.set("a", "1");
+  params.set("b", "2");
+  params.set("a", "3");
+
+  // iterate over values
+  const values = [...params];
+  assertEquals(values, [
+    ["a", "3"],
+    ["b", "2"],
+  ]);
+});
+
 Deno.test("integer", () => {
   const i = new Integer(42);
   assertEquals(i.toString(), "42");

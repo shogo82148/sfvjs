@@ -12,7 +12,12 @@ export class Parameters {
 
   set(key: string, value: BareItem): void {
     validateKey(key);
-    this.params = this.params.filter(([k]) => k !== key);
+    for (let i = 0; i < this.params.length; i++) {
+      if (this.params[i][0] === key) {
+        this.params[i][1] = value;
+        return;
+      }
+    }
     this.params.push([key, value]);
   }
 
