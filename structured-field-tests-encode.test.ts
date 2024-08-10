@@ -1,7 +1,8 @@
 import { assertEquals } from "jsr:@std/assert";
-import { Item, Integer, Decimal, BareItem, Parameters } from "./mod.ts";
+import { Item, BareItem, Integer, Decimal, Token, Parameters } from "./mod.ts";
 import testDataNumber from "./structured-field-tests/serialisation-tests/number.json" with { type: "json" };
 import testDataStringGenerated from "./structured-field-tests/serialisation-tests/string-generated.json" with { type: "json" };
+import testDataTokenGenerated from "./structured-field-tests/serialisation-tests/token-generated.json" with { type: "json" };
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -18,6 +19,11 @@ interface TestData {
   must_fail?: boolean;
 }
 
+interface SFObject {
+  __type: string;
+  value: string | number
+}
+
 Deno.test("number", () => {
   for (const data of testDataNumber) {
     test(data);
@@ -26,6 +32,12 @@ Deno.test("number", () => {
 
 Deno.test("string-generated", () => {
   for (const data of testDataStringGenerated) {
+    test(data);
+  }
+});
+
+Deno.test("token-generated", () => {
+  for (const data of testDataTokenGenerated) {
     test(data);
   }
 });
@@ -72,15 +84,26 @@ function convertToItem(data: unknown): Item {
 }
 
 function convertToBareItem(data: unknown): BareItem {
-  if (typeof data === "number") {
+  switch (typeof data) {
+  case "number":
     if (Number.isInteger(data)) {
       return new Integer(data);
     } else {
       return new Decimal(data);
     }
-  }
-  if (typeof data === "string") {
+  case "string":
     return data;
+  case "object":
+    if (data === null) {
+      throw new DataSetError("unknown type");
+    }
+    {
+      const obj = data as SFObject;
+      switch (obj.__type) {
+      case "token":
+        return new Token(obj.value as string);
+      }  
+    }
   }
   throw new DataSetError("unknown type");
 }
