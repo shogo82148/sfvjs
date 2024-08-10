@@ -1,8 +1,9 @@
 import { assertEquals } from "jsr:@std/assert";
-import { Item, BareItem, Integer, Decimal, Token, Parameters } from "./mod.ts";
+import { Dictionary, Item, BareItem, Integer, Decimal, Token, Parameters } from "./mod.ts";
 import testDataNumber from "./structured-field-tests/serialisation-tests/number.json" with { type: "json" };
 import testDataStringGenerated from "./structured-field-tests/serialisation-tests/string-generated.json" with { type: "json" };
 import testDataTokenGenerated from "./structured-field-tests/serialisation-tests/token-generated.json" with { type: "json" };
+import testDataKeyGenerated from "./structured-field-tests/serialisation-tests/key-generated.json" with { type: "json" };
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -42,6 +43,12 @@ Deno.test("token-generated", () => {
   }
 });
 
+Deno.test("key-generated", () => {
+  for (const data of testDataKeyGenerated) {
+    test(data);
+  }
+});
+
 function test(data: TestData) {
   let failed = false;
   let canonical: string[] = [];
@@ -51,8 +58,10 @@ function test(data: TestData) {
       canonical = [convertToItem(data.expected).toString()];
       break;
     case "dictionary":
+      canonical = [convertToDictionary(data.expected).toString()];
       break;
     case "list":
+      canonical = [convertToList(data.expected).toString()];
       break;
     default:
       throw new DataSetError("unknown header");
@@ -113,11 +122,44 @@ function convertParameters(data: unknown): Parameters {
     throw new DataSetError("invalid parameters");
   }
   const params = new Parameters();
-  for (let i = 0; i < data.length; i += 2) {
-    const key = data[i];
-    const value = data[i +1 ];
-    const bareItem = convertToBareItem(value);
-    params.set(key, bareItem);
+  for (const item of data) {
+    if (!Array.isArray(item)) {
+      throw new DataSetError("invalid parameters");
+    }
+    if (item.length !== 2) {
+      throw new DataSetError("invalid parameters");
+    }
+    const [key, value] = item;
+    params.set(key, convertToBareItem(value));
   }
   return params;
+}
+
+function convertToList(data: unknown): Item[] {
+  if (!Array.isArray(data)) {
+    throw new DataSetError("invalid list");
+  }
+  const list: Item[] = [];
+  for (const item of data) {
+    list.push(convertToItem(item));
+  }
+  return list;
+}
+
+function convertToDictionary(data: unknown): Dictionary {
+  if (!Array.isArray(data)) {
+    throw new DataSetError("invalid dictionary");
+  }
+  const dict = new Dictionary();
+  for (const item of data) {
+    if (!Array.isArray(item)) {
+      throw new DataSetError("invalid dictionary");
+    }
+    if (item.length !== 2) {
+      throw new DataSetError("invalid dictionary");
+    }
+    const [key, value] = item;
+    dict.set(key, convertToItem(value));
+  }
+  return dict;
 }
