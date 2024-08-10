@@ -1,5 +1,8 @@
 {
   "tasks": {
     "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@deno/dnt": "jsr:@deno/dnt@^0.41.2"
   }
 }
