@@ -60,7 +60,7 @@ function test(data: TestData) {
 }
 
 function convertToItem(data: unknown): Item {
-  if (!(data instanceof Array)) {
+  if (!Array.isArray(data)) {
     throw new DataSetError("invalid item");
   }
   if (data.length !== 2) {
@@ -86,7 +86,7 @@ function convertToBareItem(data: unknown): BareItem {
 }
 
 function convertParameters(data: unknown): Parameters {
-  if (!(data instanceof Array)) {
+  if (!Array.isArray(data)) {
     throw new DataSetError("invalid parameters");
   }
   const params = new Parameters();
