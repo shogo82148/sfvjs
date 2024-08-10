@@ -146,3 +146,9 @@ Deno.test("token", () => {
   const token = new Token("foo");
   assertEquals(token.toString(), "foo");
 });
+
+Deno.test("byte sequences", () => {
+  const bytes = new Uint8Array([0x66, 0x6f, 0x6f]);
+  const item = new Item(bytes);
+  assertEquals(item.toString(), ":Zm9v:");
+});

@@ -1,4 +1,10 @@
-export type BareItem = Token | string | Integer | Decimal | boolean;
+export type BareItem =
+  | Integer
+  | Decimal
+  | string
+  | Token
+  | Uint8Array
+  | boolean;
 
 /**
  * Item is an item defined in RFC 8941 Section 3.3.
@@ -115,7 +121,9 @@ function encodeBareItem(value: BareItem): string {
   if (value instanceof Token) {
     return value.toString();
   }
-  // TODO: serialize ByteSequence
+  if (value instanceof Uint8Array) {
+    return `:${btoa(String.fromCharCode(...value))}:`;
+  }
   if (typeof value === "boolean") {
     return value ? "?1" : "?0";
   }
