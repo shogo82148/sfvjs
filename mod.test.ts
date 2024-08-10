@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { Parameters, Integer, Decimal } from "./mod.ts";
+import { Parameters, Integer, Decimal, Token } from "./mod.ts";
 
 Deno.test("parameters", () => {
   const params = new Parameters();
@@ -8,7 +8,7 @@ Deno.test("parameters", () => {
   params.set("foo", "bar");
   params.set("baz", "qux");
 
-  assertEquals(params.length, 2, "length");
+  assertEquals(params.size, 2, "length");
 
   // search values by keys
   assertEquals(params.get("foo"), "bar");
@@ -27,6 +27,24 @@ Deno.test("parameters", () => {
 
   // serialize to string
   assertEquals(params.toString(), `;foo="bar";baz="qux"`);
+});
+
+Deno.test("parameters: order", () => {
+  const params = new Parameters();
+  params.set("foo", "bar");
+  params.set("baz", "qux");
+  params.set("foo", "quux"); // update value
+
+  // search values by index
+  assertEquals(params.at(0), ["foo", "quux"]);
+  assertEquals(params.at(1), ["baz", "qux"]);
+
+  // iterate over values
+  const values = [...params];
+  assertEquals(values, [
+    ["foo", "quux"],
+    ["baz", "qux"],
+  ]);
 });
 
 Deno.test("parameters: set", () => {
@@ -117,4 +135,7 @@ Deno.test("decimal: out of range", () => {
   );
 });
 
-Deno.test;
+Deno.test("token", () => {
+  const token = new Token("foo");
+  assertEquals(token.toString(), "foo");
+});

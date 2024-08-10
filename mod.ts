@@ -1,36 +1,40 @@
-export type BareItem = string | Integer | Decimal | boolean;
+export type BareItem = Token | string | Integer | Decimal | boolean;
 
 /**
  * Parameters is a key-value pair collection.
  */
 export class Parameters {
-  private params: [string, BareItem][] = [];
+  private params: Map<string, BareItem> = new Map();
 
-  get length(): number {
-    return this.params.length;
+  get size(): number {
+    return this.params.size;
   }
 
   set(key: string, value: BareItem): void {
     validateKey(key);
-    for (let i = 0; i < this.params.length; i++) {
-      if (this.params[i][0] === key) {
-        this.params[i][1] = value;
-        return;
-      }
-    }
-    this.params.push([key, value]);
+    this.params.set(key, value);
   }
 
   get(key: string): BareItem | undefined {
-    return this.params.find(([k]) => k === key)?.[1];
+    return this.params.get(key);
   }
 
   delete(key: string): void {
-    this.params = this.params.filter(([k]) => k !== key);
+    this.params.delete(key);
   }
 
-  at(index: number): [string, BareItem] | undefined {
-    return this.params[index];
+  at(index: number): [string, BareItem] {
+    let i = 0;
+    if (index < 0 || index >= this.params.size) {
+      throw new RangeError("index out of range");
+    }
+    for (const [key, value] of this.params) {
+      if (i === index) {
+        return [key, value];
+      }
+      i++;
+    }
+    throw new RangeError("index out of range");
   }
 
   [Symbol.iterator]() {
@@ -38,7 +42,7 @@ export class Parameters {
   }
 
   toString(): string {
-    // RFC 8941 Section 4.1.1.2.
+    // serialize the parameter using the algorithm defined in RFC 8941 Section 4.1.1.2.
     let output = "";
     for (const [key, value] of this.params) {
       output += ";";
@@ -76,9 +80,11 @@ function encodeBareItem(value: BareItem): string {
     if (!/^[\x20-\x7e]*$/.test(value)) {
       throw new TypeError("string contains invalid characters");
     }
-    return `"${value.replace(/[\\"]/g, "\\$&")}"`;
+    return `"${value.replace(/([\\"])/g, "\\$1")}"`;
   }
-  // TODO: serialize Token
+  if (value instanceof Token) {
+    return value.toString();
+  }
   // TODO: serialize ByteSequence
   if (typeof value === "boolean") {
     return value ? "?1" : "?0";
@@ -185,4 +191,28 @@ function roundToEven(value: number): number {
     return floor % 2 === 0 ? floor : floor + 1;
   }
   return Math.round(value);
+}
+
+export class Token {
+  private value: string;
+
+  constructor(value: string) {
+    validateToken(value);
+    this.value = value;
+  }
+
+  toString(): string {
+    // serialize the token using algorithm defined in RFC 8941 Section 4.1.7.
+    return this.value;
+  }
+
+  valueOf(): string {
+    return this.value;
+  }
+}
+
+function validateToken(value: string): void {
+  if (!/^[a-zA-Z*][-0-9a-zA-Z!#$%&'*+.^_`|~:/]*$/.test(value)) {
+    throw new TypeError("token contains invalid characters");
+  }
 }
