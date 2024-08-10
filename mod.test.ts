@@ -1,5 +1,31 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { Item, Parameters, Integer, Decimal, Token } from "./mod.ts";
+import {
+  List,
+  encodeList,
+  InnerList,
+  Item,
+  Parameters,
+  Integer,
+  Decimal,
+  Token,
+} from "./mod.ts";
+
+Deno.test("list", () => {
+  const list: List = [];
+  list.push(new Item(new Token("sugar")));
+  list.push(new Item(new Token("tea")));
+  list.push(new Item(new Token("rum")));
+  assertEquals(encodeList(list), "sugar, tea, rum");
+});
+
+Deno.test("inner list", () => {
+  const list = new InnerList([new Item("foo"), new Item("bar")]);
+  assertEquals(list.items.length, 2);
+  assertEquals(list.items[0].value, "foo");
+  assertEquals(list.items[1].value, "bar");
+  assertEquals(list.parameters.size, 0);
+  assertEquals(list.toString(), '("foo" "bar")');
+});
 
 Deno.test("item", () => {
   const item = new Item("foo");

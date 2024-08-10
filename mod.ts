@@ -1,3 +1,20 @@
+/**
+ * InnerList is a list of items defined in RFC 8941 Section 3.1.
+ */
+export type List = (Item | InnerList)[];
+
+export function encodeList(list: List): string {
+  let output = "";
+  for (let i = 0; i < list.length; i++) {
+    if (i !== 0) {
+      output += ", ";
+    }
+    const item = list[i];
+    output += item.toString();
+  }
+  return output;
+}
+
 export type BareItem =
   | Integer
   | Decimal
@@ -5,6 +22,29 @@ export type BareItem =
   | Token
   | Uint8Array
   | boolean;
+
+/**
+ * InnerList is a list of items defined in RFC 8941 Section 3.1.1
+ */
+export class InnerList {
+  readonly items: Item[] = [];
+  readonly parameters: Parameters;
+
+  constructor(items: Item[], params: Parameters = new Parameters()) {
+    this.items = items;
+    this.parameters = params;
+  }
+
+  toString(): string {
+    let output = "(";
+    for (const item of this.items) {
+      output += item.toString() + " ";
+    }
+    output = output.trimEnd() + ")";
+    output += this.parameters.toString();
+    return output;
+  }
+}
 
 /**
  * Item is an item defined in RFC 8941 Section 3.3.
