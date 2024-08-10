@@ -21,3 +21,24 @@ jobs:
         with:
           file: coverage.lcov
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  node:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - "22.x"
+          - "20.x"
+          - "18.x"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: build
+        run: |
+          deno run -A scripts/build_npm.ts 0.1.0
