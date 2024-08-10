@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import { Item, Integer, Decimal, BareItem, Parameters } from "./mod.ts";
 import testDataNumber from "./structured-field-tests/serialisation-tests/number.json" with { type: "json" };
+import testDataStringGenerated from "./structured-field-tests/serialisation-tests/string-generated.json" with { type: "json" };
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -9,37 +10,54 @@ class DataSetError extends Error {
   }
 }
 
+interface TestData {
+  name: string;
+  header_type: string;
+  expected: unknown;
+  canonical?: string[];
+  must_fail?: boolean;
+}
+
 Deno.test("number", () => {
   for (const data of testDataNumber) {
-    console.log(data.name);
-    let failed = false;
-    let canonical: string[] = [];
-    try {
-      switch (data.header_type) {
-      case "item":
-        canonical = [convertToItem(data.expected).toString()];
-        break;
-      case "dictionary":
-        break;
-      case "list":
-        break;
-      default:
-        throw new DataSetError("unknown header");
-      }
-    } catch (e) {
-      if (e instanceof DataSetError) {
-        throw e;
-      }
-      failed = true;
-    }
-    if (data.must_fail) {
-      assertEquals(failed, true);
-    } else {
-      assertEquals(failed, false);
-      assertEquals(canonical, data.canonical);
-    }
+    test(data);
   }
 });
+
+Deno.test("string-generated", () => {
+  for (const data of testDataStringGenerated) {
+    test(data);
+  }
+});
+
+function test(data: TestData) {
+  let failed = false;
+  let canonical: string[] = [];
+  try {
+    switch (data.header_type) {
+    case "item":
+      canonical = [convertToItem(data.expected).toString()];
+      break;
+    case "dictionary":
+      break;
+    case "list":
+      break;
+    default:
+      throw new DataSetError("unknown header");
+    }
+  } catch (e) {
+    if (e instanceof DataSetError) {
+      throw e;
+    }
+    failed = true;
+  }
+  if (data.must_fail) {
+    assertEquals(failed, true, `${data.name}: want to fail, but succeeded`);
+  } else {
+    assertEquals(failed, false, `${data.name}: failed`);
+    assertEquals(canonical, data.canonical, `${data.name}: canonical form doesn't match`);
+  }
+}
 
 function convertToItem(data: unknown): Item {
   if (!(data instanceof Array)) {
@@ -60,6 +78,9 @@ function convertToBareItem(data: unknown): BareItem {
     } else {
       return new Decimal(data);
     }
+  }
+  if (typeof data === "string") {
+    return data;
   }
   throw new DataSetError("unknown type");
 }
