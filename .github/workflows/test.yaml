@@ -25,6 +25,7 @@ jobs:
   node:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node-version:
           - "22.x"
