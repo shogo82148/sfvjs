@@ -78,6 +78,10 @@ export class Item {
   }
 }
 
+export function encodeItem(item: Item): string {
+  return item.toString();
+}
+
 /**
  * Parameters is a key-value pair collection.
  */
