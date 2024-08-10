@@ -184,8 +184,8 @@ function validateString(value: string): void {
  * Integer is an integer number defined in RFC 8941 Section 3.3.1.
  */
 export class Integer {
-  static MAX_VALUE = 999999999999999;
-  static MIN_VALUE = -999999999999999;
+  static readonly MAX_VALUE = 999999999999999;
+  static readonly MIN_VALUE = -999999999999999;
 
   private value: number;
 
@@ -217,8 +217,8 @@ export class Integer {
  * Decimal is a decimal number defined in RFC 8941 Section 3.3.2.
  */
 export class Decimal {
-  static MAX_VALUE = 999999999999.9993896484375;
-  static MIN_VALUE = -999999999999.9993896484375;
+  static readonly MAX_VALUE = 999999999999.9993896484375;
+  static readonly MIN_VALUE = -999999999999.9993896484375;
 
   private value: number;
   private str: string;
