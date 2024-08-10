@@ -8,6 +8,8 @@ import {
   Integer,
   Decimal,
   Token,
+  Dictionary,
+  encodeDictionary,
 } from "./mod.ts";
 
 Deno.test("list", () => {
@@ -25,6 +27,15 @@ Deno.test("inner list", () => {
   assertEquals(list.items[1].value, "bar");
   assertEquals(list.parameters.size, 0);
   assertEquals(list.toString(), '("foo" "bar")');
+});
+
+Deno.test("dictionary", () => {
+  const dict = new Dictionary();
+  dict.set("a", new Item(false));
+  dict.set("b", new Item(true));
+  dict.set("c", new Item(true));
+  dict.get("c")!.parameters.set("foo", new Token("bar"));
+  assertEquals(encodeDictionary(dict), "a=?0, b, c;foo=bar");
 });
 
 Deno.test("item", () => {
