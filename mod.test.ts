@@ -1,5 +1,12 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { Parameters, Integer, Decimal, Token } from "./mod.ts";
+import { Item, Parameters, Integer, Decimal, Token } from "./mod.ts";
+
+Deno.test("item", () => {
+  const item = new Item("foo");
+  assertEquals(item.value, "foo");
+  assertEquals(item.parameters.size, 0);
+  assertEquals(item.toString(), '"foo"');
+});
 
 Deno.test("parameters", () => {
   const params = new Parameters();
@@ -26,7 +33,7 @@ Deno.test("parameters", () => {
   ]);
 
   // serialize to string
-  assertEquals(params.toString(), `;foo="bar";baz="qux"`);
+  assertEquals(params.toString(), ';foo="bar";baz="qux"');
 });
 
 Deno.test("parameters: order", () => {
