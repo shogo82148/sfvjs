@@ -1,4 +1,42 @@
-export type BareItem = Token | string | Integer | Decimal | boolean;
+export type BareItem =
+  | Integer
+  | Decimal
+  | string
+  | Token
+  | Uint8Array
+  | boolean;
+
+/**
+ * Item is an item defined in RFC 8941 Section 3.3.
+ */
+export class Item {
+  private val: BareItem;
+  private params: Parameters;
+
+  constructor(value: BareItem, params: Parameters = new Parameters()) {
+    this.val = value;
+    this.params = params;
+  }
+
+  get value(): BareItem {
+    return this.val;
+  }
+
+  set value(value: BareItem) {
+    if (typeof value === "string") {
+      validateString(value);
+    }
+    this.val = value;
+  }
+
+  get parameters(): Parameters {
+    return this.params;
+  }
+
+  toString(): string {
+    return encodeBareItem(this.val) + this.params.toString();
+  }
+}
 
 /**
  * Parameters is a key-value pair collection.
@@ -77,19 +115,25 @@ function encodeBareItem(value: BareItem): string {
     return value.toString();
   }
   if (typeof value === "string") {
-    if (!/^[\x20-\x7e]*$/.test(value)) {
-      throw new TypeError("string contains invalid characters");
-    }
+    validateString(value);
     return `"${value.replace(/([\\"])/g, "\\$1")}"`;
   }
   if (value instanceof Token) {
     return value.toString();
   }
-  // TODO: serialize ByteSequence
+  if (value instanceof Uint8Array) {
+    return `:${btoa(String.fromCharCode(...value))}:`;
+  }
   if (typeof value === "boolean") {
     return value ? "?1" : "?0";
   }
   throw new TypeError("unsupported value type");
+}
+
+function validateString(value: string): void {
+  if (!/^[\x20-\x7e]*$/.test(value)) {
+    throw new TypeError("string contains invalid characters");
+  }
 }
 
 /**
