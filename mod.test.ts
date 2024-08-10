@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { Parameters, Integer, Decimal } from "./mod.ts";
+import { Parameters, Integer, Decimal, Token } from "./mod.ts";
 
 Deno.test("parameters", () => {
   const params = new Parameters();
@@ -135,4 +135,7 @@ Deno.test("decimal: out of range", () => {
   );
 });
 
-Deno.test;
+Deno.test("token", () => {
+  const token = new Token("foo");
+  assertEquals(token.toString(), "foo");
+});

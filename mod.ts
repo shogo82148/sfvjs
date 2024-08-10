@@ -202,7 +202,7 @@ export class Token {
   }
 
   toString(): string {
-    // RFC 8941 Section 4.1.7.
+    // serialize the token using algorithm defined in RFC 8941 Section 4.1.7.
     return this.value;
   }
 
