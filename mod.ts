@@ -4,33 +4,37 @@ export type BareItem = Token | string | Integer | Decimal | boolean;
  * Parameters is a key-value pair collection.
  */
 export class Parameters {
-  private params: [string, BareItem][] = [];
+  private params: Map<string, BareItem> = new Map();
 
-  get length(): number {
-    return this.params.length;
+  get size(): number {
+    return this.params.size;
   }
 
   set(key: string, value: BareItem): void {
     validateKey(key);
-    for (let i = 0; i < this.params.length; i++) {
-      if (this.params[i][0] === key) {
-        this.params[i][1] = value;
-        return;
-      }
-    }
-    this.params.push([key, value]);
+    this.params.set(key, value);
   }
 
   get(key: string): BareItem | undefined {
-    return this.params.find(([k]) => k === key)?.[1];
+    return this.params.get(key);
   }
 
   delete(key: string): void {
-    this.params = this.params.filter(([k]) => k !== key);
+    this.params.delete(key);
   }
 
-  at(index: number): [string, BareItem] | undefined {
-    return this.params[index];
+  at(index: number): [string, BareItem] {
+    let i = 0;
+    if (index < 0 || index >= this.params.size) {
+      throw new RangeError("index out of range");
+    }
+    for (const [key, value] of this.params) {
+      if (i === index) {
+        return [key, value];
+      }
+      i++;
+    }
+    throw new RangeError("index out of range");
   }
 
   [Symbol.iterator]() {
@@ -38,7 +42,7 @@ export class Parameters {
   }
 
   toString(): string {
-    // RFC 8941 Section 4.1.1.2.
+    // serialize the parameter using the algorithm defined in RFC 8941 Section 4.1.1.2.
     let output = "";
     for (const [key, value] of this.params) {
       output += ";";
