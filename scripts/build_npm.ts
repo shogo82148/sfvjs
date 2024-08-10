@@ -7,6 +7,14 @@ await build({
   outDir: "./npm",
   shims: {
     deno: true,
+
+    // workaround for https://github.com/shogo82148/sfvjs/pull/5
+    customDev: [
+      {
+        module: "./custom_error_options.ts",
+        globalNames: ["ErrorOptions"],
+      },
+    ],
   },
   package: {
     // package.json properties
@@ -22,6 +30,10 @@ await build({
       url: "https://github.com/shogo82148/sfvjs/issues",
     },
   },
+
+  // workaround for https://github.com/shogo82148/sfvjs/pull/5
+  typeCheck: false,
+
   postBuild() {
     // steps to run after building and before running the tests
     Deno.copyFileSync("LICENSE", "npm/LICENSE");
