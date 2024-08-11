@@ -96,7 +96,7 @@ export class Dictionary {
     throw new RangeError("index out of range");
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): Iterator<[string, Item | InnerList]> {
     return this.params[Symbol.iterator]();
   }
 
@@ -219,7 +219,7 @@ export class Parameters {
     throw new RangeError("index out of range");
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): Iterator<[string, BareItem]> {
     return this.params[Symbol.iterator]();
   }
 
