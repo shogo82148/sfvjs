@@ -47,6 +47,71 @@ export class InnerList {
 }
 
 /**
+ * Dictionary is a key-value pair collection defined in RFC 8941 Section 3.2.
+ */
+export class Dictionary {
+  private params: Map<string, Item> = new Map();
+
+  get size(): number {
+    return this.params.size;
+  }
+
+  set(key: string, value: Item): void {
+    validateKey(key);
+    this.params.set(key, value);
+  }
+
+  get(key: string): Item | undefined {
+    return this.params.get(key);
+  }
+
+  delete(key: string): void {
+    this.params.delete(key);
+  }
+
+  at(index: number): [string, Item] {
+    let i = 0;
+    if (index < 0 || index >= this.params.size) {
+      throw new RangeError("index out of range");
+    }
+    for (const [key, value] of this.params) {
+      if (i === index) {
+        return [key, value];
+      }
+      i++;
+    }
+    throw new RangeError("index out of range");
+  }
+
+  [Symbol.iterator]() {
+    return this.params[Symbol.iterator]();
+  }
+
+  toString(): string {
+    // serialize the parameter using the algorithm defined in RFC 8941 Section 4.1.1.2.
+    let output = "";
+    let index = 0;
+    for (const [key, item] of this.params) {
+      if (index !== 0) {
+        output += ", ";
+      }
+      index++;
+      output += encodeKey(key);
+      if (item.value === true) {
+        output += item.parameters.toString();
+      } else {
+        output += "=" + encodeItem(item);
+      }
+    }
+    return output;
+  }
+}
+
+export function encodeDictionary(dict: Dictionary): string {
+  return dict.toString();
+}
+
+/**
  * Item is an item defined in RFC 8941 Section 3.3.
  */
 export class Item {
