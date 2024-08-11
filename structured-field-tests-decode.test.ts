@@ -6,6 +6,7 @@ import {
   decodeItem,
   decodeList,
   Dictionary,
+  DisplayString,
   encodeDictionary,
   encodeItem,
   encodeList,
@@ -65,6 +66,9 @@ import testDataLargeGenerated from "./structured-field-tests/large-generated.jso
   type: "json",
 };
 import testDataDate from "./structured-field-tests/date.json" with {
+  type: "json",
+};
+import testDisplayString from "./structured-field-tests/display-string.json" with {
   type: "json",
 };
 
@@ -182,6 +186,12 @@ Deno.test("large-generated", () => {
 
 Deno.test("date", () => {
   for (const data of testDataDate) {
+    test(data);
+  }
+});
+
+Deno.test("display-string", () => {
+  for (const data of testDisplayString) {
     test(data);
   }
 });
@@ -308,6 +318,12 @@ function convertBareItem(item: BareItem) {
         return {
           __type: "date",
           value: item.getTime() / 1000,
+        };
+      }
+      if (item instanceof DisplayString) {
+        return {
+          __type: "displaystring",
+          value: item.valueOf(),
         };
       }
       throw new DataSetError(`unsupported type: ${typeof item}`);
