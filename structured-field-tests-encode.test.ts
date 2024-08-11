@@ -67,17 +67,17 @@ Deno.test("key-generated", () => {
 
 function test(data: TestData) {
   let failed = false;
-  let canonical: string[] = [];
+  let canonical: string = "";
   try {
     switch (data.header_type) {
       case "item":
-        canonical = [convertToItem(data.expected).toString()];
+        canonical = convertToItem(data.expected).toString();
         break;
       case "dictionary":
-        canonical = [convertToDictionary(data.expected).toString()];
+        canonical = convertToDictionary(data.expected).toString();
         break;
       case "list":
-        canonical = [convertToList(data.expected).toString()];
+        canonical = convertToList(data.expected).toString();
         break;
       default:
         throw new DataSetError("unknown header");
@@ -94,7 +94,7 @@ function test(data: TestData) {
     assertEquals(failed, false, `${data.name}: failed`);
     assertEquals(
       canonical,
-      data.canonical,
+      data.canonical?.join(", "),
       `${data.name}: canonical form doesn't match`,
     );
   }

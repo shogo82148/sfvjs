@@ -80,7 +80,8 @@ function test(data: TestData) {
         assertEquals(actual, data.expected, data.name);
         if (data.canonical) {
           const encoded = encodeItem(item);
-          assertEquals([encoded], data.canonical, data.name);
+          const canonical = data.canonical.join(", ");
+          assertEquals(encoded, canonical, data.name);
         }
       }
       break;
@@ -105,7 +106,7 @@ function test(data: TestData) {
         assertEquals(actual, data.expected, data.name);
         if (data.canonical) {
           const encoded = encodeList(list);
-          const canonical = data.canonical.join(",");
+          const canonical = data.canonical.join(", ");
           assertEquals(encoded, canonical, data.name);
         }
       }
