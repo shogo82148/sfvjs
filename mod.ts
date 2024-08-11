@@ -61,18 +61,18 @@ export class InnerList {
  * Dictionary is a key-value pair collection defined in RFC 8941 Section 3.2.
  */
 export class Dictionary {
-  private params: Map<string, Item> = new Map();
+  private params: Map<string, Item | InnerList> = new Map();
 
   get size(): number {
     return this.params.size;
   }
 
-  set(key: string, value: Item): void {
+  set(key: string, value: Item | InnerList): void {
     validateKey(key);
     this.params.set(key, value);
   }
 
-  get(key: string): Item | undefined {
+  get(key: string): Item | InnerList | undefined {
     return this.params.get(key);
   }
 
@@ -80,7 +80,7 @@ export class Dictionary {
     this.params.delete(key);
   }
 
-  at(index: number): [string, Item] {
+  at(index: number): [string, Item | InnerList] {
     let i = 0;
     if (index < 0 || index >= this.params.size) {
       throw new RangeError("index out of range");
@@ -108,10 +108,10 @@ export class Dictionary {
       }
       index++;
       output += encodeKey(key);
-      if (item.value === true) {
+      if (item instanceof Item && item.value === true) {
         output += item.parameters.toString();
       } else {
-        output += "=" + encodeItem(item);
+        output += "=" + item.toString();
       }
     }
     return output;
@@ -120,6 +120,17 @@ export class Dictionary {
 
 export function encodeDictionary(dict: Dictionary): string {
   return dict.toString();
+}
+
+export function decodeDictionary(...input: string[]): Dictionary {
+  const state = new DecodeState(...input);
+  state.skipSPs();
+  const dict = state.decodeDictionary();
+  state.skipSPs();
+  if (state.peek() !== END_OF_INPUT) {
+    throw new SyntaxError("unexpected input");
+  }
+  return dict;
 }
 
 /**
@@ -591,6 +602,40 @@ class DecodeState {
   // decodeItemOrInnerList parses an item or an inner list according to RFC 8941 Section 4.2.1.1.
   decodeItemOrInnerList(): Item | InnerList {
     return this.decodeItem();
+  }
+
+  // decodeDictionary parses a dictionary according to RFC 8941 Section 4.2.2.
+  decodeDictionary(): Dictionary {
+    const dict = new Dictionary();
+
+    if (this.peek() === END_OF_INPUT) {
+      return dict;
+    }
+
+    for (;;) {
+      const key = this.decodeKey();
+      if (this.peek() === "=") {
+        this.next(); // skip "="
+        const value = this.decodeItemOrInnerList();
+        dict.set(key, value);
+      } else {
+        dict.set(key, new Item(true));
+      }
+
+      this.skipOWS();
+      if (this.peek() === END_OF_INPUT) {
+        break;
+      }
+      if (this.peek() !== ",") {
+        this.errUnexpectedCharacter();
+      }
+      this.next(); // skip ","
+      this.skipOWS();
+      if (this.peek() === END_OF_INPUT) {
+        throw new SyntaxError("unexpected end of input");
+      }
+    }
+    return dict;
   }
 
   // decodeParameters parses parameters according to RFC 8941 Section 4.2.3.2.

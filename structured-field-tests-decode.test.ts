@@ -2,8 +2,11 @@ import { assertEquals } from "jsr:@std/assert";
 import {
   BareItem,
   Decimal,
+  decodeDictionary,
   decodeItem,
   decodeList,
+  Dictionary,
+  encodeDictionary,
   encodeItem,
   encodeList,
   InnerList,
@@ -13,6 +16,12 @@ import {
   Parameters,
   Token,
 } from "./mod.ts";
+import testDataList from "./structured-field-tests/list.json" with {
+  type: "json",
+};
+import testDataDictionary from "./structured-field-tests/dictionary.json" with {
+  type: "json",
+};
 import testDataNumber from "./structured-field-tests/number.json" with {
   type: "json",
 };
@@ -37,9 +46,6 @@ import testDataBinary from "./structured-field-tests/binary.json" with {
 import testDataBoolean from "./structured-field-tests/boolean.json" with {
   type: "json",
 };
-import testDataList from "./structured-field-tests/list.json" with {
-  type: "json",
-};
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -56,6 +62,18 @@ interface TestData {
   canonical?: string[];
   must_fail?: boolean;
 }
+
+Deno.test("list", () => {
+  for (const data of testDataList) {
+    test(data);
+  }
+});
+
+Deno.test("dictionary", () => {
+  for (const data of testDataDictionary) {
+    test(data);
+  }
+});
 
 Deno.test("number", () => {
   for (const data of testDataNumber) {
@@ -101,12 +119,6 @@ Deno.test("binary", () => {
 
 Deno.test("boolean", () => {
   for (const data of testDataBoolean) {
-    test(data);
-  }
-});
-
-Deno.test("list", () => {
-  for (const data of testDataList) {
     test(data);
   }
 });
@@ -162,6 +174,32 @@ function test(data: TestData) {
         if (data.canonical) {
           const encoded = encodeList(list);
           const canonical = data.canonical.join(", ");
+          assertEquals(encoded, canonical, data.name);
+        }
+      }
+      break;
+    case "dictionary":
+      {
+        let dict: Dictionary;
+        try {
+          dict = decodeDictionary(...data.raw);
+        } catch (e) {
+          if (e instanceof DataSetError) {
+            throw e;
+          }
+          if (data.must_fail) {
+            return;
+          }
+          throw e;
+        }
+        if (data.must_fail) {
+          throw new Error("unexpected success");
+        }
+        const actual = convertDictionary(dict);
+        assertEquals(actual, data.expected, data.name);
+        if (data.canonical) {
+          const canonical = data.canonical.join(", ");
+          const encoded = encodeDictionary(dict);
           assertEquals(encoded, canonical, data.name);
         }
       }
@@ -236,6 +274,14 @@ function convertInnerList(list: InnerList) {
     list.items.map(convertItem),
     convertParameters(list.parameters),
   ];
+}
+
+function convertDictionary(dict: Dictionary) {
+  const result = [];
+  for (const [key, value] of dict) {
+    result.push([key, convertItemOrInnerList(value)]);
+  }
+  return result;
 }
 
 // base32encode is minimum implementation for encoding base32.
