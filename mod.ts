@@ -147,6 +147,17 @@ export function encodeItem(item: Item): string {
   return item.toString();
 }
 
+export function decodeItem(...input: string[]): Item {
+  const state = new DecodeState(...input);
+  state.skipSPs();
+  const item = state.decodeItem();
+  state.skipSPs();
+  if (state.peek() !== END_OF_INPUT) {
+    throw new SyntaxError("unexpected input");
+  }
+  return item;
+}
+
 /**
  * Parameters is a key-value pair collection.
  */
@@ -367,5 +378,151 @@ export class Token {
 function validateToken(value: string): void {
   if (!/^[a-zA-Z*][-0-9a-zA-Z!#$%&'*+.^_`|~:/]*$/.test(value)) {
     throw new TypeError("token contains invalid characters");
+  }
+}
+
+const END_OF_INPUT = "end of input";
+
+function isDigit(c: string): boolean {
+  return c >= "0" && c <= "9";
+}
+
+class DecodeState {
+  private pos = 0;
+  private readonly input: string[];
+
+  constructor(...input: string[]) {
+    this.input = [...input.join(",")];
+  }
+
+  peek(): string {
+    if (this.pos >= this.input.length) {
+      return END_OF_INPUT;
+    }
+    return this.input[this.pos];
+  }
+
+  next(): void {
+    this.pos++;
+  }
+
+  skipSPs(): void {
+    while (this.peek() === " ") {
+      this.next();
+    }
+  }
+
+  errUnexpectedCharacter(): never {
+    const ch = this.peek();
+    if (ch === END_OF_INPUT) {
+      throw new SyntaxError("unexpected end of input");
+    }
+    throw new SyntaxError(`unexpected character at ${this.pos}`);
+  }
+
+  // decodeItem parses an Item according to RFC 8941 Section 4.2.3.
+  decodeItem(): Item {
+    const value = this.decodeBareItem();
+    const params = this.decodeParameters();
+    return new Item(value, params);
+  }
+
+  // decodeBareItem parses a bare item according to RFC 8941 Section 4.2.3.1.
+  decodeBareItem(): BareItem {
+    const ch = this.peek();
+    if (ch === "-" || isDigit(ch)) {
+      // an integer or a decimal
+      return this.decodeIntegerOrDecimal();
+    }
+    return new Integer(0);
+  }
+
+  decodeIntegerOrDecimal(): Integer | Decimal {
+    let ch = this.peek();
+    let neg = false;
+    if (ch === "-") {
+      neg = true;
+      this.next();
+      if (!isDigit(this.peek())) {
+        this.errUnexpectedCharacter();
+      }
+    }
+
+    let num = 0;
+    let cnt = 0;
+    for (;;) {
+      const ch = this.peek();
+      if (!isDigit(ch)) {
+        break;
+      }
+      this.next();
+      num = num * 10 + Number(ch);
+      cnt++;
+      if (cnt > 15) {
+        throw new SyntaxError("number is too long");
+      }
+    }
+    if (this.peek() !== ".") {
+      // it is an integer
+      if (neg) {
+        num *= -1;
+      }
+      return new Integer(num);
+    }
+    this.next(); // skip "."
+
+    // it might be a decimal
+    if (cnt > 12) {
+      throw new SyntaxError("number is too long");
+    }
+
+    let frac = 0;
+    ch = this.peek();
+    if (!isDigit(ch)) {
+      // fractional part MUST NOT be empty.
+      this.errUnexpectedCharacter();
+    }
+    this.next();
+    frac = frac * 10 + Number(ch);
+
+    ch = this.peek();
+    if (!isDigit(ch)) {
+      let ret = num + frac / 10;
+      if (neg) {
+        ret *= -1;
+      }
+      return new Decimal(ret);
+    }
+    this.next();
+    frac = frac * 10 + Number(ch);
+
+    ch = this.peek();
+    if (!isDigit(ch)) {
+      let ret = num + frac / 100;
+      if (neg) {
+        ret *= -1;
+      }
+      return new Decimal(ret);
+    }
+    this.next();
+    frac = frac * 10 + Number(ch);
+
+    ch = this.peek();
+    if (!isDigit(ch)) {
+      let ret = num + frac / 1000;
+      if (neg) {
+        ret *= -1;
+      }
+      return new Decimal(ret);
+    }
+    this.next();
+    frac = frac * 10 + Number(ch);
+
+    throw new SyntaxError("number is too long");
+  }
+
+  // decodeParameters parses parameters according to RFC 8941 Section 4.2.3.2.
+  decodeParameters(): Parameters {
+    return new Parameters();
   }
 }
