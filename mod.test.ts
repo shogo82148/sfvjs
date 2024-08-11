@@ -1,15 +1,15 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
 import {
-  List,
-  encodeList,
-  InnerList,
-  Item,
-  Parameters,
-  Integer,
   Decimal,
-  Token,
   Dictionary,
   encodeDictionary,
+  encodeList,
+  InnerList,
+  Integer,
+  Item,
+  List,
+  Parameters,
+  Token,
 } from "./mod.ts";
 
 Deno.test("list", () => {
@@ -135,12 +135,12 @@ Deno.test("integer: out of range", () => {
   assertThrows(
     () => new Integer(999999999999999 + 1),
     RangeError,
-    "value must be between -999999999999999 and 999999999999999"
+    "value must be between -999999999999999 and 999999999999999",
   );
   assertThrows(
     () => new Integer(-999999999999999 - 1),
     RangeError,
-    "value must be between -999999999999999 and 999999999999999"
+    "value must be between -999999999999999 and 999999999999999",
   );
 });
 
@@ -170,12 +170,12 @@ Deno.test("decimal: out of range", () => {
   assertThrows(
     () => new Decimal(999999999999.99951171875),
     RangeError,
-    "value must be between -999999999999.999 and 999999999999.999"
+    "value must be between -999999999999.999 and 999999999999.999",
   );
   assertThrows(
     () => new Decimal(-999999999999.99951171875),
     RangeError,
-    "value must be between -999999999999.999 and 999999999999.999"
+    "value must be between -999999999999.999 and 999999999999.999",
   );
 });
 

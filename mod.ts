@@ -15,6 +15,17 @@ export function encodeList(list: List): string {
   return output;
 }
 
+export function decodeList(...input: string[]): List {
+  const state = new DecodeState(...input);
+  state.skipSPs();
+  const list = state.decodeList();
+  state.skipSPs();
+  if (state.peek() !== END_OF_INPUT) {
+    throw new SyntaxError("unexpected input");
+  }
+  return list;
+}
+
 export type BareItem =
   | Integer
   | Decimal
@@ -412,6 +423,13 @@ class DecodeState {
     }
   }
 
+  // skipOWS skips OWS in RFC 7230
+  skipOWS(): void {
+    while (this.peek() === " " || this.peek() === "\t") {
+      this.next();
+    }
+  }
+
   errUnexpectedCharacter(): never {
     const ch = this.peek();
     if (ch === END_OF_INPUT) {
@@ -434,7 +452,7 @@ class DecodeState {
       // an integer or a decimal
       return this.decodeIntegerOrDecimal();
     }
-    return new Integer(0);
+    this.errUnexpectedCharacter();
   }
 
   decodeIntegerOrDecimal(): Integer | Decimal {
@@ -524,5 +542,37 @@ class DecodeState {
   // decodeParameters parses parameters according to RFC 8941 Section 4.2.3.2.
   decodeParameters(): Parameters {
     return new Parameters();
+  }
+
+  // decodeItemOrInnerList parses an item or an inner list according to RFC 8941 Section 4.2.1.1.
+  decodeItemOrInnerList(): Item | InnerList {
+    return this.decodeItem();
+  }
+
+  // decodeList parses a list according to RFC 8941 Section 4.2.1.
+  decodeList(): List {
+    const members: List = [];
+
+    if (this.peek() === END_OF_INPUT) {
+      return members;
+    }
+
+    for (;;) {
+      const item = this.decodeItemOrInnerList();
+      members.push(item);
+      this.skipOWS();
+      if (this.peek() === END_OF_INPUT) {
+        break;
+      }
+      if (this.peek() !== ",") {
+        this.errUnexpectedCharacter();
+      }
+      this.next(); // skip ","
+      this.skipOWS();
+      if (this.peek() === END_OF_INPUT) {
+        throw new SyntaxError("unexpected end of input");
+      }
+    }
+    return members;
   }
 }

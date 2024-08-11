@@ -1,9 +1,25 @@
 import { assertEquals } from "jsr:@std/assert";
-import { Dictionary, Item, BareItem, Integer, Decimal, Token, Parameters } from "./mod.ts";
-import testDataNumber from "./structured-field-tests/serialisation-tests/number.json" with { type: "json" };
-import testDataStringGenerated from "./structured-field-tests/serialisation-tests/string-generated.json" with { type: "json" };
-import testDataTokenGenerated from "./structured-field-tests/serialisation-tests/token-generated.json" with { type: "json" };
-import testDataKeyGenerated from "./structured-field-tests/serialisation-tests/key-generated.json" with { type: "json" };
+import {
+  BareItem,
+  Decimal,
+  Dictionary,
+  Integer,
+  Item,
+  Parameters,
+  Token,
+} from "./mod.ts";
+import testDataNumber from "./structured-field-tests/serialisation-tests/number.json" with {
+  type: "json",
+};
+import testDataStringGenerated from "./structured-field-tests/serialisation-tests/string-generated.json" with {
+  type: "json",
+};
+import testDataTokenGenerated from "./structured-field-tests/serialisation-tests/token-generated.json" with {
+  type: "json",
+};
+import testDataKeyGenerated from "./structured-field-tests/serialisation-tests/key-generated.json" with {
+  type: "json",
+};
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -22,7 +38,7 @@ interface TestData {
 
 interface SFObject {
   __type: string;
-  value: string | number
+  value: string | number;
 }
 
 Deno.test("number", () => {
@@ -54,17 +70,17 @@ function test(data: TestData) {
   let canonical: string[] = [];
   try {
     switch (data.header_type) {
-    case "item":
-      canonical = [convertToItem(data.expected).toString()];
-      break;
-    case "dictionary":
-      canonical = [convertToDictionary(data.expected).toString()];
-      break;
-    case "list":
-      canonical = [convertToList(data.expected).toString()];
-      break;
-    default:
-      throw new DataSetError("unknown header");
+      case "item":
+        canonical = [convertToItem(data.expected).toString()];
+        break;
+      case "dictionary":
+        canonical = [convertToDictionary(data.expected).toString()];
+        break;
+      case "list":
+        canonical = [convertToList(data.expected).toString()];
+        break;
+      default:
+        throw new DataSetError("unknown header");
     }
   } catch (e) {
     if (e instanceof DataSetError) {
@@ -76,7 +92,11 @@ function test(data: TestData) {
     assertEquals(failed, true, `${data.name}: want to fail, but succeeded`);
   } else {
     assertEquals(failed, false, `${data.name}: failed`);
-    assertEquals(canonical, data.canonical, `${data.name}: canonical form doesn't match`);
+    assertEquals(
+      canonical,
+      data.canonical,
+      `${data.name}: canonical form doesn't match`,
+    );
   }
 }
 
@@ -94,25 +114,25 @@ function convertToItem(data: unknown): Item {
 
 function convertToBareItem(data: unknown): BareItem {
   switch (typeof data) {
-  case "number":
-    if (Number.isInteger(data)) {
-      return new Integer(data);
-    } else {
-      return new Decimal(data);
-    }
-  case "string":
-    return data;
-  case "object":
-    if (data === null) {
-      throw new DataSetError("unknown type");
-    }
-    {
-      const obj = data as SFObject;
-      switch (obj.__type) {
-      case "token":
-        return new Token(obj.value as string);
-      }  
-    }
+    case "number":
+      if (Number.isInteger(data)) {
+        return new Integer(data);
+      } else {
+        return new Decimal(data);
+      }
+    case "string":
+      return data;
+    case "object":
+      if (data === null) {
+        throw new DataSetError("unknown type");
+      }
+      {
+        const obj = data as SFObject;
+        switch (obj.__type) {
+          case "token":
+            return new Token(obj.value as string);
+        }
+      }
   }
   throw new DataSetError("unknown type");
 }

@@ -8,5 +8,10 @@
   },
   "exclude": [
     "npm/"
-  ]
+  ],
+  "lint": {
+    "exclude": [
+      "structured-field-tests/"
+    ]
+  }
 }
