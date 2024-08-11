@@ -28,6 +28,9 @@ import testDataListList from "./structured-field-tests/listlist.json" with {
 import testDataDictionary from "./structured-field-tests/dictionary.json" with {
   type: "json",
 };
+import testDataParamDict from "./structured-field-tests/param-dict.json" with {
+  type: "json",
+};
 import testDataNumber from "./structured-field-tests/number.json" with {
   type: "json",
 };
@@ -92,6 +95,12 @@ Deno.test("listlist", () => {
 
 Deno.test("dictionary", () => {
   for (const data of testDataDictionary) {
+    test(data);
+  }
+});
+
+Deno.test("param-dict", () => {
+  for (const data of testDataParamDict) {
     test(data);
   }
 });
