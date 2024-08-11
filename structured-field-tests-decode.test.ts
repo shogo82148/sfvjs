@@ -49,6 +49,9 @@ import testDataBinary from "./structured-field-tests/binary.json" with {
 import testDataBoolean from "./structured-field-tests/boolean.json" with {
   type: "json",
 };
+import testDataLargeGenerated from "./structured-field-tests/large-generated.json" with {
+  type: "json",
+};
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -128,6 +131,12 @@ Deno.test("binary", () => {
 
 Deno.test("boolean", () => {
   for (const data of testDataBoolean) {
+    test(data);
+  }
+});
+
+Deno.test("large-generated", () => {
+  for (const data of testDataLargeGenerated) {
     test(data);
   }
 });
