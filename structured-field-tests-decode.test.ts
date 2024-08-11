@@ -16,6 +16,9 @@ import {
   Parameters,
   Token,
 } from "./mod.ts";
+import testDataExamples from "./structured-field-tests/examples.json" with {
+  type: "json",
+};
 import testDataList from "./structured-field-tests/list.json" with {
   type: "json",
 };
@@ -62,6 +65,12 @@ interface TestData {
   canonical?: string[];
   must_fail?: boolean;
 }
+
+Deno.test("examples", () => {
+  for (const data of testDataExamples) {
+    test(data);
+  }
+});
 
 Deno.test("list", () => {
   for (const data of testDataList) {
