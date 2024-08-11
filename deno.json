@@ -13,5 +13,10 @@
     "exclude": [
       "structured-field-tests/"
     ]
+  },
+  "fmt": {
+    "exclude": [
+      "structured-field-tests/"
+    ]
   }
 }

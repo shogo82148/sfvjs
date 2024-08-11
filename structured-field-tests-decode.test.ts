@@ -31,6 +31,9 @@ import testDataToken from "./structured-field-tests/token.json" with {
 import testDataTokenGenerated from "./structured-field-tests/token-generated.json" with {
   type: "json",
 };
+import testDataBinary from "./structured-field-tests/binary.json" with {
+  type: "json",
+};
 import testDataList from "./structured-field-tests/list.json" with {
   type: "json",
 };
@@ -83,6 +86,12 @@ Deno.test("token", () => {
 
 Deno.test("token-generated", () => {
   for (const data of testDataTokenGenerated) {
+    test(data);
+  }
+});
+
+Deno.test("binary", () => {
+  for (const data of testDataBinary) {
     test(data);
   }
 });
@@ -179,6 +188,12 @@ function convertBareItem(item: BareItem) {
           value: item.valueOf(),
         };
       }
+      if (item instanceof Uint8Array) {
+        return {
+          __type: "binary",
+          value: base32encode(item),
+        };
+      }
       throw new DataSetError(`unsupported type: ${typeof item}`);
     default:
       throw new DataSetError(`unsupported type: ${typeof item}`);
@@ -212,4 +227,84 @@ function convertInnerList(list: InnerList) {
     list.items.map(convertItem),
     convertParameters(list.parameters),
   ];
+}
+
+// base32encode is minimum implementation for encoding base32.
+function base32encode(data: Uint8Array): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let dst = "";
+  let si = 0;
+  const n = data.length - (data.length % 5);
+  while (si < n) {
+    const hi = data[si + 0] << 24 | data[si + 1] << 16 | data[si + 2] << 8 |
+      data[si + 3];
+    const lo = hi << 8 | data[si + 4];
+    dst += alphabet[(hi >> 27) & 0x1F];
+    dst += alphabet[(hi >> 22) & 0x1F];
+    dst += alphabet[(hi >> 17) & 0x1F];
+    dst += alphabet[(hi >> 12) & 0x1F];
+    dst += alphabet[(hi >> 7) & 0x1F];
+    dst += alphabet[(hi >> 2) & 0x1F];
+    dst += alphabet[(lo >> 5) & 0x1F];
+    dst += alphabet[lo & 0x1F];
+    si += 5;
+  }
+
+  switch (data.length % 5) {
+    case 4:
+      {
+        const hi = data[si + 0] << 24 | data[si + 1] << 16 | data[si + 2] << 8 |
+          data[si + 3];
+        const lo = hi << 8;
+        dst += alphabet[(hi >> 27) & 0x1F];
+        dst += alphabet[(hi >> 22) & 0x1F];
+        dst += alphabet[(hi >> 17) & 0x1F];
+        dst += alphabet[(hi >> 12) & 0x1F];
+        dst += alphabet[(hi >> 7) & 0x1F];
+        dst += alphabet[(hi >> 2) & 0x1F];
+        dst += alphabet[(lo >> 5) & 0x1F];
+        dst += "=";
+      }
+      break;
+    case 3:
+      {
+        const hi = data[si + 0] << 24 | data[si + 1] << 16 | data[si + 2] << 8;
+        dst += alphabet[(hi >> 27) & 0x1F];
+        dst += alphabet[(hi >> 22) & 0x1F];
+        dst += alphabet[(hi >> 17) & 0x1F];
+        dst += alphabet[(hi >> 12) & 0x1F];
+        dst += alphabet[(hi >> 7) & 0x1F];
+        dst += "=";
+        dst += "=";
+        dst += "=";
+      }
+      break;
+    case 2:
+      {
+        const hi = data[si + 0] << 24 | data[si + 1] << 16;
+        dst += alphabet[(hi >> 27) & 0x1F];
+        dst += alphabet[(hi >> 22) & 0x1F];
+        dst += alphabet[(hi >> 17) & 0x1F];
+        dst += alphabet[(hi >> 12) & 0x1F];
+        dst += "=";
+        dst += "=";
+        dst += "=";
+        dst += "=";
+      }
+      break;
+    case 1:
+      {
+        const hi = data[si + 0] << 24;
+        dst += alphabet[(hi >> 27) & 0x1F];
+        dst += alphabet[(hi >> 22) & 0x1F];
+        dst += "=";
+        dst += "=";
+        dst += "=";
+        dst += "=";
+        dst += "=";
+        dst += "=";
+      }
+      break;
+  }
+  return dst;
 }

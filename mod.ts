@@ -285,7 +285,7 @@ export class Integer {
     }
     if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
       throw new RangeError(
-        `value must be between ${Integer.MIN_VALUE} and ${Integer.MAX_VALUE}`
+        `value must be between ${Integer.MIN_VALUE} and ${Integer.MAX_VALUE}`,
       );
     }
     this.value = value;
@@ -316,7 +316,7 @@ export class Decimal {
     }
     if (value < Decimal.MIN_VALUE || value > Decimal.MAX_VALUE) {
       throw new RangeError(
-        `value must be between -999999999999.999 and 999999999999.999`
+        `value must be between -999999999999.999 and 999999999999.999`,
       );
     }
     this.str = Decimal.floatToString(value);
@@ -461,6 +461,11 @@ class DecodeState {
     if (/^[a-zA-Z*]$/.test(ch)) {
       // a token
       return this.decodeToken();
+    }
+
+    if (ch === ":") {
+      // a byte sequence
+      return this.decodeByteSequence();
     }
 
     this.errUnexpectedCharacter();
@@ -670,5 +675,35 @@ class DecodeState {
       this.next();
     }
     return new Token(token);
+  }
+
+  // decodeByteSequence parses a byte sequence according to RFC 8941 Section 4.2.7.
+  decodeByteSequence(): Uint8Array {
+    if (this.peek() !== ":") {
+      this.errUnexpectedCharacter();
+    }
+    this.next(); // skip ":"
+
+    let bytes = "";
+    for (;;) {
+      const ch = this.peek();
+      if (ch === END_OF_INPUT) {
+        break;
+      }
+      if (ch === ":") {
+        this.next(); // skip ":"
+        return new Uint8Array(
+          atob(bytes)
+            .split("")
+            .map((c) => c.charCodeAt(0)),
+        );
+      }
+      if (!/^[A-Za-z0-9+/=]$/.test(ch)) {
+        this.errUnexpectedCharacter();
+      }
+      bytes += ch;
+      this.next();
+    }
+    throw new SyntaxError("unexpected end of input");
   }
 }
