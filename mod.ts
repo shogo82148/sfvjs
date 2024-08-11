@@ -395,7 +395,7 @@ function validateToken(value: string): void {
 const END_OF_INPUT = "end of input";
 
 function isDigit(c: string): boolean {
-  return c >= "0" && c <= "9";
+  return /^[0-9]$/.test(c);
 }
 
 class DecodeState {
@@ -452,6 +452,12 @@ class DecodeState {
       // an integer or a decimal
       return this.decodeIntegerOrDecimal();
     }
+
+    if (ch === '"') {
+      // a string
+      return this.decodeString();
+    }
+
     this.errUnexpectedCharacter();
   }
 
@@ -574,5 +580,37 @@ class DecodeState {
       }
     }
     return members;
+  }
+
+  // decodeString parses a string according to RFC 8941 Section 4.2.5.
+  decodeString(): string {
+    if (this.peek() !== '"') {
+      this.errUnexpectedCharacter();
+    }
+    this.next(); // skip '"'
+
+    let str = "";
+    for (;;) {
+      const ch = this.peek();
+      if (ch === "\\") {
+        this.next(); // skip "\\"
+        if (this.peek() === "\\" || this.peek() === '"') {
+          str += this.peek();
+          this.next();
+          continue;
+        }
+        this.errUnexpectedCharacter();
+      }
+      if (ch === '"') {
+        this.next(); // skip '"'
+        return str;
+      }
+      if (/^[\x20-\x7e]$/.test(ch)) {
+        str += ch;
+        this.next();
+        continue;
+      }
+      this.errUnexpectedCharacter();
+    }
   }
 }

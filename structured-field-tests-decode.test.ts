@@ -18,6 +18,12 @@ import testDataNumber from "./structured-field-tests/number.json" with {
 import testDataNumberGenerated from "./structured-field-tests/number-generated.json" with {
   type: "json",
 };
+import testDataString from "./structured-field-tests/string.json" with {
+  type: "json",
+};
+import testDataStringGenerated from "./structured-field-tests/string-generated.json" with {
+  type: "json",
+};
 import testDataList from "./structured-field-tests/list.json" with {
   type: "json",
 };
@@ -46,6 +52,18 @@ Deno.test("number", () => {
 
 Deno.test("number-generated", () => {
   for (const data of testDataNumberGenerated) {
+    test(data);
+  }
+});
+
+Deno.test("string", () => {
+  for (const data of testDataString) {
+    test(data);
+  }
+});
+
+Deno.test("string-generated", () => {
+  for (const data of testDataStringGenerated) {
     test(data);
   }
 });
