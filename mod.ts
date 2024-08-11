@@ -601,7 +601,34 @@ class DecodeState {
 
   // decodeItemOrInnerList parses an item or an inner list according to RFC 8941 Section 4.2.1.1.
   decodeItemOrInnerList(): Item | InnerList {
+    if (this.peek() === "(") {
+      return this.decodeInnerList();
+    }
     return this.decodeItem();
+  }
+
+  // decodeInnerList parses an inner list according to RFC 8941 Section 4.2.1.2.
+  decodeInnerList(): InnerList {
+    if (this.peek() !== "(") {
+      this.errUnexpectedCharacter();
+    }
+    this.next(); // skip "("
+
+    const items: Item[] = [];
+    for (;;) {
+      this.skipSPs();
+      if (this.peek() === ")") {
+        this.next(); // skip ")"
+        break;
+      }
+      const item = this.decodeItem();
+      items.push(item);
+      if (this.peek() !== " " && this.peek() !== ")") {
+        throw new SyntaxError("unexpected end of input");
+      }
+    }
+    const params = this.decodeParameters();
+    return new InnerList(items, params);
   }
 
   // decodeDictionary parses a dictionary according to RFC 8941 Section 4.2.2.
@@ -619,7 +646,8 @@ class DecodeState {
         const value = this.decodeItemOrInnerList();
         dict.set(key, value);
       } else {
-        dict.set(key, new Item(true));
+        const params = this.decodeParameters();
+        dict.set(key, new Item(true, params));
       }
 
       this.skipOWS();
