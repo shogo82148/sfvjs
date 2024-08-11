@@ -22,7 +22,13 @@ import testDataExamples from "./structured-field-tests/examples.json" with {
 import testDataList from "./structured-field-tests/list.json" with {
   type: "json",
 };
+import testDataParamList from "./structured-field-tests/param-list.json" with {
+  type: "json",
+};
 import testDataListList from "./structured-field-tests/listlist.json" with {
+  type: "json",
+};
+import testDataParamListList from "./structured-field-tests/param-listlist.json" with {
   type: "json",
 };
 import testDataDictionary from "./structured-field-tests/dictionary.json" with {
@@ -87,8 +93,20 @@ Deno.test("list", () => {
   }
 });
 
+Deno.test("param-list", () => {
+  for (const data of testDataParamList) {
+    test(data);
+  }
+});
+
 Deno.test("listlist", () => {
   for (const data of testDataListList) {
+    test(data);
+  }
+});
+
+Deno.test("param-listlist", () => {
+  for (const data of testDataParamListList) {
     test(data);
   }
 });
