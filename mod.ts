@@ -270,6 +270,9 @@ function encodeBareItem(value: BareItem): string {
   if (typeof value === "boolean") {
     return value ? "?1" : "?0";
   }
+  if (value instanceof Date) {
+    return `@${Math.floor(value.getTime() / 1000)}`;
+  }
   throw new TypeError("unsupported value type");
 }
 
