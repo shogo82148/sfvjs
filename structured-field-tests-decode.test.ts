@@ -64,6 +64,9 @@ import testDataBoolean from "./structured-field-tests/boolean.json" with {
 import testDataLargeGenerated from "./structured-field-tests/large-generated.json" with {
   type: "json",
 };
+import testDataDate from "./structured-field-tests/date.json" with {
+  type: "json",
+};
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -173,6 +176,12 @@ Deno.test("boolean", () => {
 
 Deno.test("large-generated", () => {
   for (const data of testDataLargeGenerated) {
+    test(data);
+  }
+});
+
+Deno.test("date", () => {
+  for (const data of testDataDate) {
     test(data);
   }
 });
@@ -293,6 +302,12 @@ function convertBareItem(item: BareItem) {
         return {
           __type: "binary",
           value: base32encode(item),
+        };
+      }
+      if (item instanceof Date) {
+        return {
+          __type: "date",
+          value: item.getTime() / 1000,
         };
       }
       throw new DataSetError(`unsupported type: ${typeof item}`);

@@ -32,7 +32,8 @@ export type BareItem =
   | string
   | Token
   | Uint8Array
-  | boolean;
+  | boolean
+  | Date;
 
 /**
  * InnerList is a list of items defined in RFC 8941 Section 3.1.1
@@ -484,6 +485,11 @@ class DecodeState {
       return this.decodeBoolean();
     }
 
+    if (ch === "@") {
+      // a date
+      return this.decodeDate();
+    }
+
     this.errUnexpectedCharacter();
   }
 
@@ -801,5 +807,45 @@ class DecodeState {
       return true;
     }
     this.errUnexpectedCharacter();
+  }
+
+  decodeDate(): Date {
+    if (this.peek() !== "@") {
+      this.errUnexpectedCharacter();
+    }
+    this.next(); // skip "@"
+
+    let neg = false;
+    if (this.peek() === "-") {
+      neg = true;
+      this.next(); // skip "-"
+    }
+
+    if (!isDigit(this.peek())) {
+      this.errUnexpectedCharacter();
+    }
+
+    let num = 0;
+    let cnt = 0;
+    for (;;) {
+      const ch = this.peek();
+      if (!isDigit(ch)) {
+        break;
+      }
+      this.next();
+      num = num * 10 + Number(ch);
+      cnt++;
+      if (cnt > 15) {
+        throw new SyntaxError("number is too long");
+      }
+    }
+
+    if (this.peek() === ".") {
+      this.errUnexpectedCharacter();
+    }
+    if (neg) {
+      num *= -1;
+    }
+    return new Date(num * 1000);
   }
 }
