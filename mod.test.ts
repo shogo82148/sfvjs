@@ -2,6 +2,7 @@ import { assertEquals, assertThrows } from "jsr:@std/assert";
 import {
   Decimal,
   Dictionary,
+  DisplayString,
   encodeDictionary,
   encodeList,
   InnerList,
@@ -194,4 +195,10 @@ Deno.test("date", () => {
   const date = new Date(999);
   const item = new Item(date);
   assertEquals(item.toString(), "@0");
+});
+
+Deno.test("display string", () => {
+  const displayString = new DisplayString("foo");
+  assertEquals(displayString.toString(), '%"foo"');
+  assertEquals(displayString.valueOf(), "foo");
 });

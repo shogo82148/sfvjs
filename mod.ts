@@ -33,7 +33,8 @@ export type BareItem =
   | Token
   | Uint8Array
   | boolean
-  | Date;
+  | Date
+  | DisplayString;
 
 /**
  * InnerList is a list of items defined in RFC 8941 Section 3.1.1
@@ -407,6 +408,37 @@ function validateToken(value: string): void {
   }
 }
 
+export class DisplayString {
+  private value: string;
+
+  constructor(value: string) {
+    this.value = value;
+  }
+
+  toString(): string {
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(this.value);
+    let output = '%"';
+    for (const byte of bytes) {
+      if (
+        byte === 0x25 /* % */ || byte === 0x22 /* " */ || byte <= 0x1f ||
+        byte >= 0x7f
+      ) {
+        const hex = "0123456789abcdef";
+        output += `%${hex[byte >> 4]}${hex[byte & 0xf]}`;
+      } else {
+        output += String.fromCharCode(byte);
+      }
+    }
+    output += '"';
+    return output;
+  }
+
+  valueOf(): string {
+    return this.value;
+  }
+}
+
 const END_OF_INPUT = "end of input";
 
 function isDigit(c: string): boolean {
@@ -491,6 +523,11 @@ class DecodeState {
     if (ch === "@") {
       // a date
       return this.decodeDate();
+    }
+
+    if (ch === "%") {
+      // a display string
+      return this.decodeDisplayString();
     }
 
     this.errUnexpectedCharacter();
@@ -851,5 +888,52 @@ class DecodeState {
       num *= -1;
     }
     return new Date(num * 1000);
+  }
+
+  // decodeDisplayString parses a display string according to https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis-06#name-parsing-a-display-string
+  decodeDisplayString(): DisplayString {
+    if (this.peek() !== "%") {
+      this.errUnexpectedCharacter();
+    }
+    this.next(); // skip "%"
+    if (this.peek() !== '"') {
+      this.errUnexpectedCharacter();
+    }
+    this.next(); // skip '"'
+
+    const bytes: number[] = [];
+    for (;;) {
+      const ch = this.peek();
+      if (!/^[\x20-\x7e]$/.test(ch)) {
+        this.errUnexpectedCharacter();
+      }
+      this.next();
+
+      if (ch === "%") {
+        // %-encoded character
+        const hex = this.peek();
+        if (!/[0-9a-f]/.test(hex)) {
+          this.errUnexpectedCharacter();
+        }
+        this.next();
+        const hex2 = this.peek();
+        if (!/[0-9a-f]/.test(hex2)) {
+          this.errUnexpectedCharacter();
+        }
+        this.next();
+        const byte = parseInt(hex + hex2, 16);
+        bytes.push(byte);
+        continue;
+      }
+
+      if (ch === '"') {
+        break;
+      }
+
+      bytes.push(ch.codePointAt(0) ?? 0);
+    }
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const str = decoder.decode(new Uint8Array(bytes));
+    return new DisplayString(str);
   }
 }
