@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import { BareItem, decodeItem, Integer, Decimal, Item, Parameters, encodeItem } from "./mod.ts";
 import testDataNumber from "./structured-field-tests/number.json" with { type: "json" };
+import testDataNumberGenerated from "./structured-field-tests/number-generated.json" with { type: "json" };
 
 class DataSetError extends Error {
   constructor(message: string) {
@@ -20,6 +21,12 @@ interface TestData {
 
 Deno.test("number", () => {
   for (const data of testDataNumber) {
+    test(data);
+  }
+});
+
+Deno.test("number-generated", () => {
+  for (const data of testDataNumberGenerated) {
     test(data);
   }
 });
