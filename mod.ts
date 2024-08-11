@@ -468,6 +468,11 @@ class DecodeState {
       return this.decodeByteSequence();
     }
 
+    if (ch === "?") {
+      // a boolean
+      return this.decodeBoolean();
+    }
+
     this.errUnexpectedCharacter();
   }
 
@@ -705,5 +710,23 @@ class DecodeState {
       this.next();
     }
     throw new SyntaxError("unexpected end of input");
+  }
+
+  // decodeBoolean parses a boolean according to RFC 8941 Section 4.2.8.
+  decodeBoolean(): boolean {
+    if (this.peek() !== "?") {
+      this.errUnexpectedCharacter();
+    }
+    this.next(); // skip "?"
+    const ch = this.peek();
+    if (ch === "0") {
+      this.next();
+      return false;
+    }
+    if (ch === "1") {
+      this.next();
+      return true;
+    }
+    this.errUnexpectedCharacter();
   }
 }

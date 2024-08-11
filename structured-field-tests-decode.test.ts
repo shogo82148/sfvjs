@@ -34,6 +34,9 @@ import testDataTokenGenerated from "./structured-field-tests/token-generated.jso
 import testDataBinary from "./structured-field-tests/binary.json" with {
   type: "json",
 };
+import testDataBoolean from "./structured-field-tests/boolean.json" with {
+  type: "json",
+};
 import testDataList from "./structured-field-tests/list.json" with {
   type: "json",
 };
@@ -92,6 +95,12 @@ Deno.test("token-generated", () => {
 
 Deno.test("binary", () => {
   for (const data of testDataBinary) {
+    test(data);
+  }
+});
+
+Deno.test("boolean", () => {
+  for (const data of testDataBoolean) {
     test(data);
   }
 });
