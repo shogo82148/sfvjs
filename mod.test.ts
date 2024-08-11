@@ -189,3 +189,9 @@ Deno.test("byte sequences", () => {
   const item = new Item(bytes);
   assertEquals(item.toString(), ":Zm9v:");
 });
+
+Deno.test("date", () => {
+  const date = new Date(999);
+  const item = new Item(date);
+  assertEquals(item.toString(), "@0");
+});
