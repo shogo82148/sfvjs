@@ -11,6 +11,7 @@ import {
   Item,
   List,
   Parameters,
+  Token,
 } from "./mod.ts";
 import testDataNumber from "./structured-field-tests/number.json" with {
   type: "json",
@@ -22,6 +23,12 @@ import testDataString from "./structured-field-tests/string.json" with {
   type: "json",
 };
 import testDataStringGenerated from "./structured-field-tests/string-generated.json" with {
+  type: "json",
+};
+import testDataToken from "./structured-field-tests/token.json" with {
+  type: "json",
+};
+import testDataTokenGenerated from "./structured-field-tests/token-generated.json" with {
   type: "json",
 };
 import testDataList from "./structured-field-tests/list.json" with {
@@ -64,6 +71,18 @@ Deno.test("string", () => {
 
 Deno.test("string-generated", () => {
   for (const data of testDataStringGenerated) {
+    test(data);
+  }
+});
+
+Deno.test("token", () => {
+  for (const data of testDataToken) {
+    test(data);
+  }
+});
+
+Deno.test("token-generated", () => {
+  for (const data of testDataTokenGenerated) {
     test(data);
   }
 });
@@ -153,6 +172,12 @@ function convertBareItem(item: BareItem) {
       }
       if (item instanceof Decimal) {
         return item.valueOf();
+      }
+      if (item instanceof Token) {
+        return {
+          __type: "token",
+          value: item.valueOf(),
+        };
       }
       throw new DataSetError(`unsupported type: ${typeof item}`);
     default:

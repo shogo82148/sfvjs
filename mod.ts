@@ -458,9 +458,15 @@ class DecodeState {
       return this.decodeString();
     }
 
+    if (/^[a-zA-Z*]$/.test(ch)) {
+      // a token
+      return this.decodeToken();
+    }
+
     this.errUnexpectedCharacter();
   }
 
+  // decodeIntegerOrDecimal parses an integer or a decimal according to RFC 8941 Section 4.2.4.
   decodeIntegerOrDecimal(): Integer | Decimal {
     let ch = this.peek();
     let neg = false;
@@ -545,16 +551,6 @@ class DecodeState {
     throw new SyntaxError("number is too long");
   }
 
-  // decodeParameters parses parameters according to RFC 8941 Section 4.2.3.2.
-  decodeParameters(): Parameters {
-    return new Parameters();
-  }
-
-  // decodeItemOrInnerList parses an item or an inner list according to RFC 8941 Section 4.2.1.1.
-  decodeItemOrInnerList(): Item | InnerList {
-    return this.decodeItem();
-  }
-
   // decodeList parses a list according to RFC 8941 Section 4.2.1.
   decodeList(): List {
     const members: List = [];
@@ -580,6 +576,51 @@ class DecodeState {
       }
     }
     return members;
+  }
+
+  // decodeItemOrInnerList parses an item or an inner list according to RFC 8941 Section 4.2.1.1.
+  decodeItemOrInnerList(): Item | InnerList {
+    return this.decodeItem();
+  }
+
+  // decodeParameters parses parameters according to RFC 8941 Section 4.2.3.2.
+  decodeParameters(): Parameters {
+    const params = new Parameters();
+    for (;;) {
+      if (this.peek() !== ";") {
+        break;
+      }
+      this.next(); // skip ";"
+      this.skipSPs();
+
+      const key = this.decodeKey();
+      if (this.peek() === "=") {
+        this.next(); // skip "="
+        const value = this.decodeBareItem();
+        params.set(key, value);
+      } else {
+        params.set(key, true);
+      }
+    }
+    return params;
+  }
+
+  // decodeKey parses a key according to RFC 8941 Section 4.2.3.3.
+  decodeKey(): string {
+    if (!/^[a-zA-Z*]$/.test(this.peek())) {
+      this.errUnexpectedCharacter();
+    }
+
+    let key = "";
+    for (;;) {
+      const ch = this.peek();
+      if (!/^[-a-zA-Z0-9_.*]$/.test(ch)) {
+        break;
+      }
+      key += ch;
+      this.next();
+    }
+    return key;
   }
 
   // decodeString parses a string according to RFC 8941 Section 4.2.5.
@@ -612,5 +653,22 @@ class DecodeState {
       }
       this.errUnexpectedCharacter();
     }
+  }
+
+  // decodeToken parses a Token according to RFC 8941 Section 4.2.6.
+  decodeToken(): Token {
+    let token = "";
+    for (;;) {
+      const ch = this.peek();
+      if (ch === END_OF_INPUT) {
+        break;
+      }
+      if (!/^[-0-9a-zA-Z!#$%&'*+.^_`|~:/]$/.test(ch)) {
+        break;
+      }
+      token += ch;
+      this.next();
+    }
+    return new Token(token);
   }
 }
