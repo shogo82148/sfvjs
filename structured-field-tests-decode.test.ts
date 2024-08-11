@@ -1,11 +1,11 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
-  BareItem,
+  type BareItem,
   Decimal,
   decodeDictionary,
   decodeItem,
   decodeList,
-  Dictionary,
+  type Dictionary,
   DisplayString,
   encodeDictionary,
   encodeItem,
@@ -13,8 +13,8 @@ import {
   InnerList,
   Integer,
   Item,
-  List,
-  Parameters,
+  type List,
+  type Parameters,
   Token,
 } from "./mod.ts";
 import testDataExamples from "./structured-field-tests/examples.json" with {

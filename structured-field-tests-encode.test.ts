@@ -1,6 +1,6 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
-  BareItem,
+  type BareItem,
   Decimal,
   Dictionary,
   Integer,

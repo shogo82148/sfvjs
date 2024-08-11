@@ -8,7 +8,7 @@ import {
   InnerList,
   Integer,
   Item,
-  List,
+  type List,
   Parameters,
   Token,
 } from "./mod.ts";
