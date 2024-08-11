@@ -812,6 +812,7 @@ class DecodeState {
     this.errUnexpectedCharacter();
   }
 
+  // decodeDate parses a date according to https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis-06#name-parsing-a-date
   decodeDate(): Date {
     if (this.peek() !== "@") {
       this.errUnexpectedCharacter();
