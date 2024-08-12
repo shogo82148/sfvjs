@@ -1,5 +1,10 @@
 # @shogo82148/sfv
 
+[![test](https://github.com/shogo82148/sfvjs/actions/workflows/test.yaml/badge.svg)](https://github.com/shogo82148/sfvjs/actions/workflows/test.yaml)
+[![npm](https://img.shields.io/npm/v/@shogo82148/sfv)](https://www.npmjs.com/package/@shogo82148/sfv)
+[![npm](https://img.shields.io/npm/dm/@shogo82148/sfv)](https://www.npmjs.com/package/@shogo82148/sfv)
+[![JSR](https://jsr.io/badges/@shogo82148/sfv)](https://jsr.io/@shogo82148/sfv)
+
 TypeScript implementation for
 [RFC 8941 Structured Field Values for HTTP](https://www.rfc-editor.org/rfc/rfc8941.html).
 
