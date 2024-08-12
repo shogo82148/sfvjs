@@ -58,7 +58,13 @@ export class InnerList {
   readonly items: Item[] = [];
   readonly parameters: Parameters;
 
-  constructor(items: Item[], params: Parameters = new Parameters()) {
+  /**
+   * Create a new InnerList.
+   *
+   * @param items items in the inner list
+   * @param params parameters of the inner list
+   */
+  constructor(items: Item[] = [], params: Parameters = new Parameters()) {
     this.items = items;
     this.parameters = params;
   }
