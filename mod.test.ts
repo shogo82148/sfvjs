@@ -35,6 +35,7 @@ Deno.test("dictionary", () => {
   dict.set("a", new Item(false));
   dict.set("b", new Item(true));
   dict.set("c", new Item(true, new Parameters([["foo", new Token("bar")]])));
+  assertEquals(dict.size, 3);
   assertEquals(encodeDictionary(dict), "a=?0, b, c;foo=bar");
 });
 
@@ -44,6 +45,7 @@ Deno.test("dictionary: initialize", () => {
     ["b", new Item(true)],
     ["c", new Item(true, new Parameters([["foo", new Token("bar")]]))],
   ]);
+  assertEquals(dict.size, 3);
   assertEquals(encodeDictionary(dict), "a=?0, b, c;foo=bar");
 });
 
