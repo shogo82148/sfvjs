@@ -58,7 +58,13 @@ export class InnerList {
   readonly items: Item[] = [];
   readonly parameters: Parameters;
 
-  constructor(items: Item[], params: Parameters = new Parameters()) {
+  /**
+   * Create a new InnerList.
+   *
+   * @param items items in the inner list
+   * @param params parameters of the inner list
+   */
+  constructor(items: Item[] = [], params: Parameters = new Parameters()) {
     this.items = items;
     this.parameters = params;
   }
@@ -84,6 +90,35 @@ export class InnerList {
  */
 export class Dictionary {
   private params: Map<string, Item | InnerList> = new Map();
+
+  /**
+   * Create a new empty Dictionary.
+   *
+   * @returns a new empty Dictionary
+   */
+  constructor();
+
+  /**
+   * Create a new Dictionary with key-value pairs.
+   *
+   * @param iter iterable of key-value pairs
+   * @returns a new Dictionary
+   */
+  constructor(iterable: Iterable<[string, Item | InnerList]>);
+
+  constructor(
+    iterable:
+      | Iterable<[string, Item | InnerList]>
+      | undefined = undefined,
+  ) {
+    if (iterable === undefined) {
+      return;
+    }
+    for (const [key, value] of iterable) {
+      validateKey(key);
+      this.params.set(key, value);
+    }
+  }
 
   /**
    * size returns the number of key-value pairs in the dictionary.
@@ -282,6 +317,35 @@ export function decodeItem(...input: string[]): Item {
  */
 export class Parameters {
   private params: Map<string, BareItem> = new Map();
+
+  /**
+   * Create a new empty Parameters.
+   *
+   * @returns a new empty Parameters
+   */
+  constructor();
+
+  /**
+   * Create a new Parameters with key-value pairs.
+   *
+   * @param iter iterable of key-value pairs
+   * @returns a new Parameters
+   */
+  constructor(iterable: Iterable<[string, BareItem]>);
+
+  constructor(
+    iterable:
+      | Iterable<[string, BareItem]>
+      | undefined = undefined,
+  ) {
+    if (iterable === undefined) {
+      return;
+    }
+    for (const [key, value] of iterable) {
+      validateKey(key);
+      this.params.set(key, value);
+    }
+  }
 
   /**
    * size returns the number of key-value pairs in the parameters.

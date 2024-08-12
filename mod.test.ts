@@ -34,8 +34,18 @@ Deno.test("dictionary", () => {
   const dict = new Dictionary();
   dict.set("a", new Item(false));
   dict.set("b", new Item(true));
-  dict.set("c", new Item(true));
-  dict.get("c")!.parameters.set("foo", new Token("bar"));
+  dict.set("c", new Item(true, new Parameters([["foo", new Token("bar")]])));
+  assertEquals(dict.size, 3);
+  assertEquals(encodeDictionary(dict), "a=?0, b, c;foo=bar");
+});
+
+Deno.test("dictionary: initialize", () => {
+  const dict = new Dictionary([
+    ["a", new Item(false)],
+    ["b", new Item(true)],
+    ["c", new Item(true, new Parameters([["foo", new Token("bar")]]))],
+  ]);
+  assertEquals(dict.size, 3);
   assertEquals(encodeDictionary(dict), "a=?0, b, c;foo=bar");
 });
 
@@ -74,6 +84,23 @@ Deno.test("parameters", () => {
   assertEquals(params.toString(), ';foo="bar";baz="qux"');
 });
 
+Deno.test("parameters: initialize", () => {
+  const params = new Parameters([
+    ["foo", "bar"],
+    ["baz", "qux"],
+  ]);
+
+  // iterate over values
+  const values = [...params];
+  assertEquals(values, [
+    ["foo", "bar"],
+    ["baz", "qux"],
+  ]);
+
+  // serialize to string
+  assertEquals(params.toString(), ';foo="bar";baz="qux"');
+});
+
 Deno.test("parameters: order", () => {
   const params = new Parameters();
   params.set("foo", "bar");
@@ -81,6 +108,7 @@ Deno.test("parameters: order", () => {
   params.set("foo", "quux"); // update value
 
   // search values by index
+  assertThrows(() => params.at(2), RangeError, "index out of range");
   assertEquals(params.at(0), ["foo", "quux"]);
   assertEquals(params.at(1), ["baz", "qux"]);
 
@@ -102,6 +130,19 @@ Deno.test("parameters: set", () => {
   const values = [...params];
   assertEquals(values, [
     ["a", "3"],
+    ["b", "2"],
+  ]);
+});
+
+Deno.test("parameters: delete", () => {
+  const params = new Parameters();
+  params.set("a", "1");
+  params.set("b", "2");
+  params.delete("a");
+
+  // iterate over values
+  const values = [...params];
+  assertEquals(values, [
     ["b", "2"],
   ]);
 });
