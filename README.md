@@ -100,7 +100,7 @@ only `List`, `Dictionary`, and `Item` can be in a top-level.
 
 The actual type might be one of them:
 
-| Type of SFV   | Example of SFV     | Type in TypeScript | Example in Go               |
+| Type of SFV   | Example of SFV     | Type in TypeScript | Example in TypeScript       |
 | ------------- | ------------------ | ------------------ | --------------------------- |
 | Integer       | `10`               | `Integer`          | `new Integer(10)`           |
 | Decimal       | `3.14`             | `Decimal`          | `new Decimal(3.14)`         |
