@@ -3,6 +3,12 @@
  */
 export type List = (Item | InnerList)[];
 
+/**
+ * encodeList encodes a list according to RFC 8941 Section 4.1.1.
+ *
+ * @param list the list to encode
+ * @returns SFV-encoded string
+ */
 export function encodeList(list: List): string {
   let output = "";
   for (let i = 0; i < list.length; i++) {
@@ -15,6 +21,12 @@ export function encodeList(list: List): string {
   return output;
 }
 
+/**
+ * decodeList decodes a list according to RFC 8941 Section 4.2.1.
+ *
+ * @param input SFV-encoded string
+ * @returns decoded list
+ */
 export function decodeList(...input: string[]): List {
   const state = new DecodeState(...input);
   state.skipSPs();
@@ -26,6 +38,9 @@ export function decodeList(...input: string[]): List {
   return list;
 }
 
+/**
+ * BareItem is a bare item.
+ */
 export type BareItem =
   | Integer
   | Decimal
@@ -48,6 +63,11 @@ export class InnerList {
     this.parameters = params;
   }
 
+  /**
+   * toString serializes the inner list to a string.
+   *
+   * @returns SFV-encoded string of the inner list
+   */
   toString(): string {
     let output = "(";
     for (const item of this.items) {
@@ -65,23 +85,51 @@ export class InnerList {
 export class Dictionary {
   private params: Map<string, Item | InnerList> = new Map();
 
+  /**
+   * size returns the number of key-value pairs in the dictionary.
+   */
   get size(): number {
     return this.params.size;
   }
 
+  /**
+   * set sets a key-value pair to the dictionary.
+   *
+   * @param key key of the item
+   * @param value value of the item
+   */
   set(key: string, value: Item | InnerList): void {
     validateKey(key);
     this.params.set(key, value);
   }
 
+  /**
+   * get returns the value corresponding to the key.
+   *
+   * @param key key of the item
+   * @returns the value corresponding to the key
+   */
   get(key: string): Item | InnerList | undefined {
     return this.params.get(key);
   }
 
+  /**
+   * delete deletes the key-value pair from the dictionary.
+   *
+   * @param key key to delete
+   */
   delete(key: string): void {
     this.params.delete(key);
   }
 
+  /**
+   * at returns the key-value pair at the index.
+   * The index is zero-based.
+   * If the index is out of range, it throws a RangeError.
+   *
+   * @param index index of the key-value pair
+   * @returns the key-value pair at the index
+   */
   at(index: number): [string, Item | InnerList] {
     let i = 0;
     if (index < 0 || index >= this.params.size) {
@@ -100,8 +148,13 @@ export class Dictionary {
     return this.params[Symbol.iterator]();
   }
 
+  /**
+   * toString serializes the dictionary to a string.
+   *
+   * @returns SFV-encoded string of the dictionary
+   */
   toString(): string {
-    // serialize the parameter using the algorithm defined in RFC 8941 Section 4.1.1.2.
+    // serialize the dictionary using the algorithm defined in RFC 8941 Section 4.1.2.
     let output = "";
     let index = 0;
     for (const [key, item] of this.params) {
@@ -120,10 +173,22 @@ export class Dictionary {
   }
 }
 
+/**
+ * encodeDictionary encodes a dictionary according to RFC 8941 Section 4.1.2.
+ *
+ * @param dict the dictionary to encode
+ * @returns SFV-encoded string of the dictionary
+ */
 export function encodeDictionary(dict: Dictionary): string {
   return dict.toString();
 }
 
+/**
+ * decodeDictionary decodes a dictionary according to RFC 8941 Section 4.2.2.
+ *
+ * @param input SFV-encoded string
+ * @returns decoded dictionary
+ */
 export function decodeDictionary(...input: string[]): Dictionary {
   const state = new DecodeState(...input);
   state.skipSPs();
@@ -142,15 +207,25 @@ export class Item {
   private val: BareItem;
   private params: Parameters;
 
+  /**
+   * @param value the value of the item
+   * @param params the parameters of the item
+   */
   constructor(value: BareItem, params: Parameters = new Parameters()) {
     this.val = value;
     this.params = params;
   }
 
+  /**
+   * value returns the value of the item.
+   */
   get value(): BareItem {
     return this.val;
   }
 
+  /**
+   * value sets the value of the item.
+   */
   set value(value: BareItem) {
     if (typeof value === "string") {
       validateString(value);
@@ -158,19 +233,39 @@ export class Item {
     this.val = value;
   }
 
+  /**
+   * parameters returns the parameters of the item.
+   */
   get parameters(): Parameters {
     return this.params;
   }
 
+  /**
+   * toString serializes the item to a string.
+   *
+   * @returns SFV-encoded string of the item
+   */
   toString(): string {
     return encodeBareItem(this.val) + this.params.toString();
   }
 }
 
+/**
+ * encodeItem serializes an item to a string according to RFC 8941 Section 4.1.3.
+ *
+ * @param item the item to encode
+ * @returns SFV-encoded string of the item
+ */
 export function encodeItem(item: Item): string {
   return item.toString();
 }
 
+/**
+ * decodeItem parses an item according to RFC 8941 Section 4.2.3.
+ *
+ * @param input SFV-encoded string
+ * @returns the decoded item
+ */
 export function decodeItem(...input: string[]): Item {
   const state = new DecodeState(...input);
   state.skipSPs();
@@ -188,23 +283,51 @@ export function decodeItem(...input: string[]): Item {
 export class Parameters {
   private params: Map<string, BareItem> = new Map();
 
+  /**
+   * size returns the number of key-value pairs in the parameters.
+   */
   get size(): number {
     return this.params.size;
   }
 
+  /**
+   * set sets a key-value pair to the parameters.
+   *
+   * @param key the key of the parameter
+   * @param value the value of the parameter
+   */
   set(key: string, value: BareItem): void {
     validateKey(key);
     this.params.set(key, value);
   }
 
+  /**
+   * get returns the value corresponding to the key.
+   *
+   * @param key the key of the parameter
+   * @returns the value corresponding to the key
+   */
   get(key: string): BareItem | undefined {
     return this.params.get(key);
   }
 
+  /**
+   * delete deletes the key-value pair from the parameters.
+   *
+   * @param key the key of the parameter
+   */
   delete(key: string): void {
     this.params.delete(key);
   }
 
+  /**
+   * at returns the key-value pair at the index.
+   * The index is zero-based.
+   * If the index is out of range, it throws a RangeError.
+   *
+   * @param index the index of the key-value pair
+   * @returns the key-value pair at the index
+   */
   at(index: number): [string, BareItem] {
     let i = 0;
     if (index < 0 || index >= this.params.size) {
@@ -223,6 +346,11 @@ export class Parameters {
     return this.params[Symbol.iterator]();
   }
 
+  /**
+   * toString serializes the parameters to a string.
+   *
+   * @returns SFV-encoded string of the parameters
+   */
   toString(): string {
     // serialize the parameter using the algorithm defined in RFC 8941 Section 4.1.1.2.
     let output = "";
@@ -287,11 +415,24 @@ function validateString(value: string): void {
  * Integer is an integer number defined in RFC 8941 Section 3.3.1.
  */
 export class Integer {
+  /**
+   * MAX_VALUE is the maximum value of the integer that can be represented in SFV.
+   */
   static readonly MAX_VALUE = 999999999999999;
+
+  /**
+   * MIN_VALUE is the minimum value of the integer that can be represented in SFV.
+   */
   static readonly MIN_VALUE = -999999999999999;
 
   private value: number;
 
+  /**
+   * Create a new Integer.
+   * The value must be an integer.
+   *
+   * @param value the value of the integer
+   */
   constructor(value: number) {
     if (Number.isNaN(value)) {
       throw new TypeError("value must be a number");
@@ -307,10 +448,20 @@ export class Integer {
     this.value = value;
   }
 
+  /**
+   * toString returns the string representation of the integer.
+   *
+   * @returns the string representation of the integer
+   */
   toString(): string {
     return `${this.value}`;
   }
 
+  /**
+   * valueOf returns the value of the integer.
+   *
+   * @returns the value of the integer
+   */
   valueOf(): number {
     return this.value;
   }
@@ -320,12 +471,25 @@ export class Integer {
  * Decimal is a decimal number defined in RFC 8941 Section 3.3.2.
  */
 export class Decimal {
+  /**
+   * MAX_VALUE is the maximum value of the decimal that can be represented in SFV.
+   */
   static readonly MAX_VALUE = 999999999999.9993896484375;
+
+  /**
+   * MIN_VALUE is the minimum value of the decimal that can be represented in SFV.
+   */
   static readonly MIN_VALUE = -999999999999.9993896484375;
 
   private value: number;
   private str: string;
 
+  /**
+   * Create a new Decimal.
+   * The value must be a number.
+   *
+   * @param value the value of the decimal
+   */
   constructor(value: number) {
     if (Number.isNaN(value)) {
       throw new TypeError("value must be a number");
@@ -367,10 +531,20 @@ export class Decimal {
     return str; // omit trailing zeros
   }
 
+  /**
+   * toString returns the string representation of the decimal.
+   *
+   * @returns the string representation of the decimal
+   */
   toString(): string {
     return this.str;
   }
 
+  /**
+   * valueOf returns the value of the decimal.
+   *
+   * @returns the value of the decimal
+   */
   valueOf(): number {
     return this.value;
   }
@@ -384,6 +558,9 @@ function roundToEven(value: number): number {
   return Math.round(value);
 }
 
+/**
+ * Token is a token defined in RFC 8941 Section 3.3.4.
+ */
 export class Token {
   private value: string;
 
@@ -392,11 +569,21 @@ export class Token {
     this.value = value;
   }
 
+  /**
+   * toString returns the string representation of the token.
+   *
+   * @returns the string representation of the token
+   */
   toString(): string {
     // serialize the token using algorithm defined in RFC 8941 Section 4.1.7.
     return this.value;
   }
 
+  /**
+   * valueOf returns the value of the token.
+   *
+   * @returns the value of the token
+   */
   valueOf(): string {
     return this.value;
   }
@@ -408,6 +595,9 @@ function validateToken(value: string): void {
   }
 }
 
+/**
+ * DisplayString is a display string defined in draft-ietf-httpbis-sfbis-06 Section 3.3.8.
+ */
 export class DisplayString {
   private value: string;
 
@@ -415,6 +605,11 @@ export class DisplayString {
     this.value = value;
   }
 
+  /**
+   * toString returns the string representation of the display string.
+   *
+   * @returns the string representation of the display string
+   */
   toString(): string {
     const encoder = new TextEncoder();
     const bytes = encoder.encode(this.value);
@@ -434,6 +629,11 @@ export class DisplayString {
     return output;
   }
 
+  /**
+   * valueOf returns the value of the display string.
+   *
+   * @returns the value of the display string
+   */
   valueOf(): string {
     return this.value;
   }
