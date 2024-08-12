@@ -108,6 +108,7 @@ Deno.test("parameters: order", () => {
   params.set("foo", "quux"); // update value
 
   // search values by index
+  assertThrows(() => params.at(2), RangeError, "index out of range");
   assertEquals(params.at(0), ["foo", "quux"]);
   assertEquals(params.at(1), ["baz", "qux"]);
 
@@ -129,6 +130,19 @@ Deno.test("parameters: set", () => {
   const values = [...params];
   assertEquals(values, [
     ["a", "3"],
+    ["b", "2"],
+  ]);
+});
+
+Deno.test("parameters: delete", () => {
+  const params = new Parameters();
+  params.set("a", "1");
+  params.set("b", "2");
+  params.delete("a");
+
+  // iterate over values
+  const values = [...params];
+  assertEquals(values, [
     ["b", "2"],
   ]);
 });
