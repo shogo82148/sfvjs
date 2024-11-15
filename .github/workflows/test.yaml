@@ -17,7 +17,7 @@ jobs:
           deno test --coverage
           deno coverage --lcov > coverage.lcov
       - name: upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: coverage.lcov
           token: ${{ secrets.CODECOV_TOKEN }}
