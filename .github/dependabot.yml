@@ -7,3 +7,8 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
+  - package-ecosystem: "deno"
+    directory: "/"
+    schedule:
+      interval: "daily"
