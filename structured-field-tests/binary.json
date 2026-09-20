@@ -16,7 +16,19 @@
             []]
     },
     {
-        "name": "bad padding",
+        "name": "padding at beginning",
+        "raw": [":=aGVsbG8=:"],
+        "header_type": "item",
+        "must_fail": true
+    },
+    {
+        "name": "padding in middle",
+        "raw": [":a=GVsbG8=:"],
+        "header_type": "item",
+        "must_fail": true
+    },
+    {
+        "name": "unpadded",
         "raw": [":aGVsbG8:"],
         "header_type": "item",
         "expected": [
@@ -24,6 +36,32 @@
             []],
         "can_fail": true,
         "canonical": [":aGVsbG8=:"]
+    },
+    {
+        "name": "partially padded",
+        "raw": [":uuueGVsbG8=:"],
+        "header_type": "item",
+        "expected": [
+            {"__type": "binary", "value": "XLVZ4GK3DMNQ===="},
+            []],
+        "can_fail": true,
+        "canonical": [":uuueGVsbGw==:"]
+    },
+    {
+        "name": "extra padding",
+        "raw": [":aGVsbG8==:"],
+        "header_type": "item",
+        "expected": [
+            {"__type": "binary", "value": "NBSWY3DP"},
+            []],
+        "can_fail": true,
+        "canonical": [":aGVsbG8=:"]
+    },
+    {
+        "name": "bad padding dot",
+        "raw": [":aGVsbG8.:"],
+        "header_type": "item",
+        "must_fail": true
     },
     {
         "name": "bad end delimiter",
@@ -34,6 +72,12 @@
     {
         "name": "extra whitespace",
         "raw": [":aGVsb G8=:"],
+        "header_type": "item",
+        "must_fail": true
+    },
+    {
+        "name": "all whitespace",
+        "raw": [":    :"],
         "header_type": "item",
         "must_fail": true
     },
@@ -70,6 +114,12 @@
     {
         "name": "base64url binary",
         "raw": [":_-Ah:"],
+        "header_type": "item",
+        "must_fail": true
+    },
+    {
+        "name": "binary prefix only",
+        "raw": [":"],
         "header_type": "item",
         "must_fail": true
     }
