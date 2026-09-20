@@ -1,5 +1,5 @@
 /**
- * InnerList is a list of items defined in RFC 8941 Section 3.1.
+ * List is a list of items defined in RFC 8941 Section 3.1.
  */
 export type List = (Item | InnerList)[];
 

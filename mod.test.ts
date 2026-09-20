@@ -49,6 +49,34 @@ Deno.test("dictionary: initialize", () => {
   assertEquals(encodeDictionary(dict), "a=?0, b, c;foo=bar");
 });
 
+Deno.test("dictionary: at", () => {
+  const dict = new Dictionary();
+  dict.set("foo", new Item("bar"));
+  dict.set("baz", new Item("qux"));
+
+  // search values by index
+  const [key0, value0] = dict.at(0);
+  assertEquals(key0, "foo");
+  assertEquals((value0 as Item).value, "bar");
+  const [key1, value1] = dict.at(1);
+  assertEquals(key1, "baz");
+  assertEquals((value1 as Item).value, "qux");
+
+  assertThrows(() => dict.at(-1), RangeError, "index out of range");
+  assertThrows(() => dict.at(2), RangeError, "index out of range");
+});
+
+Deno.test("dictionary: delete", () => {
+  const dict = new Dictionary();
+  dict.set("a", new Item("1"));
+  dict.set("b", new Item("2"));
+  dict.delete("a");
+
+  assertEquals(dict.size, 1);
+  const values = [...dict].map(([key, value]) => [key, (value as Item).value]);
+  assertEquals(values, [["b", "2"]]);
+});
+
 Deno.test("item", () => {
   const item = new Item("foo");
   assertEquals(item.value, "foo");
