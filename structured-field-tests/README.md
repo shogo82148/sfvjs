@@ -1,6 +1,6 @@
 # Structured Field Tests
 
-These are test cases for implementations of [Structured Fields for HTTP](https://httpwg.org/specs/rfc8941.html).
+These are test cases for implementations of [Structured Fields for HTTP](https://httpwg.org/specs/rfc9651.html).
 
 ## Test Format
 
@@ -42,6 +42,8 @@ or non-canonical value.  The `expected` structure (as defined above) should seri
 `canonical` form, unless `must_fail` is `true` -- in which case the value cannot be serialised.
 These cases do not have a `raw` element.
 
+[JSON Schemas](https://json-schema.org/) for these formats are provided in the `schemas` directory.
+
 ### __type Objects
 
 Because JSON doesn't natively accommodate some data types that Structured Fields does, the `expected` member uses an object with a `__type` member and a `value` member to represent these values.
@@ -58,7 +60,7 @@ For example:
 ... carries a "foo" token. The following types are defined:
 
 * `token`: carries a Token as a JSON string; e.g., "bar"
-* `binary`: carries Binary Content as a **base32**-encoded JSON string; e.g., "ZXW6==="
+* `binary`: carries Binary Content as a **[base32](https://www.rfc-editor.org/rfc/rfc4648.html#section-6)**-encoded JSON string; e.g., "ZXW6==="
 * `date`: Carries a Date as a JSON integer; e.g., 1692859242
 * `displaystring`: Carries a Display String as a JSON string; e.g. "Füü"
 

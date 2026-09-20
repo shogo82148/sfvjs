@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import base64
 import json
 
 ALL_CHARS = range(0x00, 0x7F + 1)
@@ -119,7 +120,7 @@ for c in ALL_CHARS:
 ## allowed starting characters
 for c in ALL_CHARS:
     test = {
-        "name": "0x%02x starting an token" % c,
+        "name": "0x%02x starting a token" % c,
         "raw": ["%sa" % chr(c)],
         "header_type": "item",
     }
@@ -205,7 +206,7 @@ for c in ALL_CHARS:
 ## allowed dictionary key starting characters
 for c in ALL_CHARS:
     test = {
-        "name": "0x%02x starting an dictionary key" % c,
+        "name": "0x%02x starting a dictionary key" % c,
         "raw": ["%sa=1" % chr(c)],
         "header_type": "dictionary",
     }
@@ -276,7 +277,7 @@ for c in ALL_CHARS:
     if c in allowed_key_start_chars:
         continue
     test = {
-        "name": "0x%02x starting an dictionary key - serialise only" % c,
+        "name": "0x%02x starting a dictionary key - serialise only" % c,
         "header_type": "dictionary",
         "expected": [["%sa" % chr(c), [1, []]]],
         "must_fail": True,
@@ -415,6 +416,30 @@ tests.append(
         "expected": [{"__type": "token", "value": "a" * token_length}, []],
     }
 )
+
+## large byte sequences
+byte_sequence_length = 16384
+byte_sequence = b"a" * byte_sequence_length
+tests.append(
+    {
+        "name": "large byte sequence",
+        "raw": [":%s:" % base64.standard_b64encode(byte_sequence).decode('ascii')],
+        "header_type": "item",
+        "expected": [{"__type": "binary", "value": base64.b32encode(byte_sequence).decode('ascii')}, []],
+    }
+)
+
+## large inner lists
+inner_list_members = 256
+tests.append(
+    {
+        "name": "large inner list",
+        "raw": ["(%s)" % " ".join([str(i) for i in range(inner_list_members)])],
+        "header_type": "list",
+        "expected": [[[[i, []] for i in range(inner_list_members)], []]],
+    }
+)
+
 
 write("large", tests)
 

@@ -82,6 +82,23 @@
         "expected": [123456789012345, []]
     },
     {
+        "name": "long integer followed by comma",
+        "raw": [
+            "123456789012345, 1"
+        ],
+        "header_type": "list",
+        "expected": [
+            [
+                123456789012345,
+                []
+            ],
+            [
+                1,
+                []
+            ]
+        ]
+    },
+    {
         "name": "long negative integer",
         "raw": ["-123456789012345"],
         "header_type": "item",
@@ -91,6 +108,14 @@
         "name": "too long integer",
         "raw": ["1234567890123456"],
         "header_type": "item",
+        "must_fail": true
+    },
+    {
+        "name": "too long integer followed by comma",
+        "raw": [
+            "1234567890123456, 1"
+        ],
+        "header_type": "list",
         "must_fail": true
     },
     {
@@ -130,6 +155,23 @@
         "must_fail": true
     },
     {
+        "name": "decimal, followed by comma",
+        "raw": [
+            "123456789012.123, 1.1"
+        ],
+        "header_type": "list",
+        "expected": [
+            [
+                123456789012.123,
+                []
+            ],
+            [
+                1.1,
+                []
+            ]
+        ]
+    },
+    {
         "name": "tricky precision decimal",
         "raw": ["123456789012.1"],
         "header_type": "item",
@@ -160,6 +202,12 @@
         "expected": [-1.123, []]
     },
     {
+        "name": "decimal with zero fractional digits",
+        "raw": ["1."],
+        "header_type": "item",
+        "must_fail": true
+    },
+    {
         "name": "decimal with four fractional digits",
         "raw": ["1.1234"],
         "header_type": "item",
@@ -182,5 +230,26 @@
         "raw": ["-1234567890123.0"],
         "header_type": "item",
         "must_fail": true
+    },
+    {
+        "name": "decimal with 1 significant digit and 1 insignificant digit",
+        "raw": ["1.20"],
+        "header_type": "item",
+        "expected": [1.2, []],
+        "canonical": ["1.2"]
+    },
+    {
+        "name": "decimal with 1 significant digit and 2 insignificant digits",
+        "raw": ["1.200"],
+        "header_type": "item",
+        "expected": [1.2, []],
+        "canonical": ["1.2"]
+    },
+    {
+        "name": "decimal with 2 significant digits and 1 insignificant digit",
+        "raw": ["1.230"],
+        "header_type": "item",
+        "expected": [1.23, []],
+        "canonical": ["1.23"]
     }
 ]
