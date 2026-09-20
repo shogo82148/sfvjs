@@ -52,6 +52,86 @@ export type BareItem =
   | DisplayString;
 
 /**
+ * isInteger reports whether the value is an Integer.
+ *
+ * @param value the value to check
+ * @returns true if the value is an Integer
+ */
+export function isInteger(value: BareItem): value is Integer {
+  return value instanceof Integer;
+}
+
+/**
+ * isDecimal reports whether the value is a Decimal.
+ *
+ * @param value the value to check
+ * @returns true if the value is a Decimal
+ */
+export function isDecimal(value: BareItem): value is Decimal {
+  return value instanceof Decimal;
+}
+
+/**
+ * isString reports whether the value is a string.
+ *
+ * @param value the value to check
+ * @returns true if the value is a string
+ */
+export function isString(value: BareItem): value is string {
+  return typeof value === "string";
+}
+
+/**
+ * isToken reports whether the value is a Token.
+ *
+ * @param value the value to check
+ * @returns true if the value is a Token
+ */
+export function isToken(value: BareItem): value is Token {
+  return value instanceof Token;
+}
+
+/**
+ * isByteSequence reports whether the value is a byte sequence.
+ *
+ * @param value the value to check
+ * @returns true if the value is a byte sequence
+ */
+export function isByteSequence(value: BareItem): value is Uint8Array {
+  return value instanceof Uint8Array;
+}
+
+/**
+ * isBoolean reports whether the value is a boolean.
+ *
+ * @param value the value to check
+ * @returns true if the value is a boolean
+ */
+export function isBoolean(value: BareItem): value is boolean {
+  return typeof value === "boolean";
+}
+
+/**
+ * isDate reports whether the value is a Date.
+ *
+ * @param value the value to check
+ * @returns true if the value is a Date
+ */
+export function isDate(value: BareItem): value is Date {
+  return value instanceof Date;
+}
+
+/**
+ * isDisplayString reports whether the value is a DisplayString.
+ *
+ * @param value the value to check
+ * @returns true if the value is a DisplayString
+ */
+export function isDisplayString(value: BareItem): value is DisplayString {
+  return value instanceof DisplayString;
+}
+
+/**
  * InnerList is a list of items defined in RFC 8941 Section 3.1.1
  */
 export class InnerList {
@@ -444,29 +524,29 @@ function encodeKey(key: string): string {
 
 // encodeBareItem encodes the bare item in accordance with RFC 8941 Section 4.1.3.1.
 function encodeBareItem(value: BareItem): string {
-  if (value instanceof Integer) {
+  if (isInteger(value)) {
     return value.toString();
   }
-  if (value instanceof Decimal) {
+  if (isDecimal(value)) {
     return value.toString();
   }
-  if (typeof value === "string") {
+  if (isString(value)) {
     validateString(value);
     return `"${value.replace(/([\\"])/g, "\\$1")}"`;
   }
-  if (value instanceof Token) {
+  if (isToken(value)) {
     return value.toString();
   }
-  if (value instanceof Uint8Array) {
+  if (isByteSequence(value)) {
     return `:${btoa(String.fromCharCode(...value))}:`;
   }
-  if (typeof value === "boolean") {
+  if (isBoolean(value)) {
     return value ? "?1" : "?0";
   }
-  if (value instanceof Date) {
+  if (isDate(value)) {
     return `@${Math.floor(value.getTime() / 1000)}`;
   }
-  if (value instanceof DisplayString) {
+  if (isDisplayString(value)) {
     return encodeDisplayString(value);
   }
   throw new TypeError("unsupported value type");

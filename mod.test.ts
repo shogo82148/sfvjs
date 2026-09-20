@@ -1,5 +1,6 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
 import {
+  type BareItem,
   Decimal,
   Dictionary,
   DisplayString,
@@ -7,6 +8,14 @@ import {
   encodeList,
   InnerList,
   Integer,
+  isBoolean,
+  isByteSequence,
+  isDate,
+  isDecimal,
+  isDisplayString,
+  isInteger,
+  isString,
+  isToken,
   Item,
   type List,
   Parameters,
@@ -242,4 +251,34 @@ Deno.test("display string", () => {
   const displayString = new DisplayString("foo");
   assertEquals(displayString.toString(), '%"foo"');
   assertEquals(displayString.valueOf(), "foo");
+});
+
+Deno.test("type guards", () => {
+  const values: [BareItem, string][] = [
+    [new Integer(1), "integer"],
+    [new Decimal(1.5), "decimal"],
+    ["foo", "string"],
+    [new Token("foo"), "token"],
+    [new Uint8Array([0x66]), "byte sequence"],
+    [true, "boolean"],
+    [new Date(0), "date"],
+    [new DisplayString("foo"), "display string"],
+  ];
+
+  const guards: [string, (value: BareItem) => boolean][] = [
+    ["integer", isInteger],
+    ["decimal", isDecimal],
+    ["string", isString],
+    ["token", isToken],
+    ["byte sequence", isByteSequence],
+    ["boolean", isBoolean],
+    ["date", isDate],
+    ["display string", isDisplayString],
+  ];
+
+  for (const [value, type] of values) {
+    for (const [guardType, guard] of guards) {
+      assertEquals(guard(value), guardType === type, `${guardType}(${type})`);
+    }
+  }
 });
