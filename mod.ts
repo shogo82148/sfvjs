@@ -466,6 +466,9 @@ function encodeBareItem(value: BareItem): string {
   if (value instanceof Date) {
     return `@${Math.floor(value.getTime() / 1000)}`;
   }
+  if (value instanceof DisplayString) {
+    return encodeDisplayString(value);
+  }
   throw new TypeError("unsupported value type");
 }
 
@@ -473,6 +476,23 @@ function validateString(value: string): void {
   if (!/^[\x20-\x7e]*$/.test(value)) {
     throw new TypeError("string contains invalid characters");
   }
+}
+
+// encodeDisplayString encodes the display string in accordance with
+// https://www.rfc-editor.org/info/rfc9651/#section-4.1.11
+function encodeDisplayString(value: DisplayString): string {
+  const bytes = new TextEncoder().encode(value.valueOf());
+  let output = '%"';
+  for (const byte of bytes) {
+    const ch = byte < 0x80 ? String.fromCharCode(byte) : "";
+    if (byte === 0x25 || byte === 0x22 || byte < 0x20 || byte > 0x7e) {
+      output += `%${byte.toString(16).padStart(2, "0")}`;
+    } else {
+      output += ch;
+    }
+  }
+  output += '"';
+  return output;
 }
 
 /**
@@ -709,12 +729,29 @@ function isDigit(c: string): boolean {
   return /^[0-9]$/.test(c);
 }
 
+// normalizeBase64Padding recomputes the "=" padding of a base64 string from
+// its unpadded content length, discarding whatever padding (missing, extra,
+// or otherwise malformed) was present in the input. This lets `atob` decode
+// byte sequences whose padding doesn't strictly conform to RFC 4648 Section
+// 4 but is otherwise unambiguous, such as unpadded, over-padded, or
+// truncated-then-repadded input.
+function normalizeBase64Padding(s: string): string {
+  const stripped = s.replace(/=+$/, "");
+  const rem = stripped.length % 4;
+  if (rem === 1) {
+    // A dangling single character can never be padded into a valid base64
+    // group; leave it as-is so atob rejects it as malformed.
+    return stripped;
+  }
+  return stripped + "=".repeat((4 - rem) % 4);
+}
+
 class DecodeState {
   private pos = 0;
   private readonly input: string[];
 
   constructor(...input: string[]) {
-    this.input = [...input.join(",")];
+    this.input = [...input.join(", ")];
   }
 
   peek(): string {
@@ -1081,7 +1118,7 @@ class DecodeState {
       if (ch === ":") {
         this.next(); // skip ":"
         return new Uint8Array(
-          atob(bytes)
+          atob(normalizeBase64Padding(bytes))
             .split("")
             .map((c) => c.charCodeAt(0)),
         );

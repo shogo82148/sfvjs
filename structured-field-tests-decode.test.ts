@@ -86,6 +86,7 @@ interface TestData {
   expected?: unknown;
   canonical?: string[];
   must_fail?: boolean;
+  can_fail?: boolean;
 }
 
 Deno.test("examples", () => {
@@ -198,6 +199,23 @@ Deno.test("display-string", () => {
 
 function test(data: TestData) {
   console.log(data.name);
+  try {
+    testInner(data);
+  } catch (e) {
+    if (e instanceof DataSetError) {
+      throw e;
+    }
+    // Per the structured-field-tests README, `can_fail` marks a SHOULD-level
+    // expectation: failing to decode, mismatching `expected`, or mismatching
+    // `canonical` is an acceptable outcome for these cases, not a test failure.
+    if (data.can_fail) {
+      return;
+    }
+    throw e;
+  }
+}
+
+function testInner(data: TestData) {
   switch (data.header_type) {
     case "item":
       {
