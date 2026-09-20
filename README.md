@@ -14,41 +14,44 @@ TypeScript implementation for
 
 ```typescript
 import {
-  Decimal,
   decodeDictionary,
   decodeItem,
   decodeList,
-  DisplayString,
-  Integer,
-  Item,
-  Token,
+  isBoolean,
+  isByteSequence,
+  isDate,
+  isDecimal,
+  isDisplayString,
+  isInteger,
+  isString,
+  isToken,
 } from "@shogo82148/sfv";
 
 // decoding Items
 const item = decodeItem("abc");
 const value = item.value;
-if (value instanceof Integer) {
+if (isInteger(value)) {
   // Integers
 }
-if (value instanceof Decimal) {
+if (isDecimal(value)) {
   // Decimals
 }
-if (typeof value === "string") {
+if (isString(value)) {
   // Strings
 }
-if (value instanceof Token) {
+if (isToken(value)) {
   // Tokens
 }
-if (value instanceof Uint8Array) {
+if (isByteSequence(value)) {
   // Binary Sequences
 }
-if (typeof value === "boolean") {
+if (isBoolean(value)) {
   // Booleans
 }
-if (value instanceof Date) {
+if (isDate(value)) {
   // Dates
 }
-if (value instanceof DisplayString) {
+if (isDisplayString(value)) {
   // Display Strings
 }
 
