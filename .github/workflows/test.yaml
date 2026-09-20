@@ -28,9 +28,9 @@ jobs:
       fail-fast: false
       matrix:
         node-version:
+          - "26.x"
+          - "24.x"
           - "22.x"
-          - "20.x"
-          - "18.x"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
