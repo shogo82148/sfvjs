@@ -7,15 +7,15 @@ await build({
   outDir: "./npm",
   shims: {
     deno: true,
-
-    // workaround for https://github.com/shogo82148/sfvjs/pull/5
-    customDev: [
-      {
-        module: "./custom_error_options.ts",
-        globalNames: ["ErrorOptions"],
-      },
-    ],
   },
+
+  // @std/assert (used only in tests) relies on newer lib.d.ts types
+  // (ErrorOptions, Set.prototype.union/intersection/symmetricDifference)
+  // that aren't in dnt's default "ES2021" lib set.
+  compilerOptions: {
+    lib: ["ESNext"],
+  },
+
   package: {
     // package.json properties
     name: "@shogo82148/sfv",
@@ -30,9 +30,6 @@ await build({
       url: "https://github.com/shogo82148/sfvjs/issues",
     },
   },
-
-  // workaround for https://github.com/shogo82148/sfvjs/pull/5
-  typeCheck: false,
 
   postBuild() {
     // steps to run after building and before running the tests
