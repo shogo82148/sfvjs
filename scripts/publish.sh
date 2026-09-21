@@ -11,4 +11,4 @@ deno publish
 # npm publish
 deno run -A scripts/build_npm.ts "$(jq -r .version deno.json)"
 cd npm
-npm staged publish
+npm stage publish
