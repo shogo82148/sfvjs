@@ -1,7 +1,8 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
   type BareItem,
   Decimal,
+  decodeItem,
   Dictionary,
   DisplayString,
   encodeDictionary,
@@ -267,6 +268,18 @@ Deno.test("byte sequences", () => {
   const bytes = new Uint8Array([0x66, 0x6f, 0x6f]);
   const item = new Item(bytes);
   assertEquals(item.toString(), ":Zm9v:");
+});
+
+Deno.test("byte sequences: long run of padding is handled in linear time", () => {
+  const n = 100000;
+  const start = performance.now();
+  assertThrows(() => decodeItem(":" + "=".repeat(n) + "A:"));
+  assertEquals(
+    decodeItem(":Zm9v" + "=".repeat(n) + ":").value,
+    new Uint8Array([0x66, 0x6f, 0x6f]),
+  );
+  const elapsed = performance.now() - start;
+  assert(elapsed < 1000, `took ${elapsed}ms`);
 });
 
 Deno.test("date", () => {
