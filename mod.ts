@@ -816,7 +816,13 @@ function isDigit(c: string): boolean {
 // 4 but is otherwise unambiguous, such as unpadded, over-padded, or
 // truncated-then-repadded input.
 function normalizeBase64Padding(s: string): string {
-  const stripped = s.replace(/=+$/, "");
+  // Strip trailing "=" with a linear scan rather than `/=+$/`, which
+  // backtracks quadratically on a long run of "=" not at the end of input.
+  let end = s.length;
+  while (end > 0 && s[end - 1] === "=") {
+    end--;
+  }
+  const stripped = s.slice(0, end);
   const rem = stripped.length % 4;
   if (rem === 1) {
     // A dangling single character can never be padded into a valid base64
