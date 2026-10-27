@@ -669,7 +669,7 @@ export class Decimal {
 
   private static floatToString(value: number): string {
     let str = "";
-    let i = roundToEven(value * 1000);
+    let i = roundToEven(value);
 
     // write the sign
     if (i < 0) {
@@ -714,12 +714,36 @@ export class Decimal {
   }
 }
 
+// roundToEven returns value * 1000 rounded to the nearest integer, with ties to even.
+// It works on the shortest decimal string that round-trips to value,
+// not on its exact binary value, so that e.g. 0.5015 is treated as a tie.
 function roundToEven(value: number): number {
-  const floor = Math.floor(value);
-  if (value - floor === 0.5) {
-    return floor % 2 === 0 ? floor : floor + 1;
+  const sign = value < 0 ? -1 : 1;
+  const m = /^(\d+)(?:\.(\d+))?(?:e([+-]\d+))?$/.exec(
+    Math.abs(value).toString(),
+  );
+  if (m === null) {
+    throw new TypeError("value must be a finite number");
   }
-  return Math.round(value);
+  const frac = m[2] ?? "";
+  let digits = m[1] + frac;
+  // value * 1000 = digits * 10^exp
+  const exp = Number(m[3] ?? "0") - frac.length + 3;
+  if (exp >= 0) {
+    return sign * Number(digits) * 10 ** exp;
+  }
+  if (digits.length + exp < 0) {
+    digits = "0".repeat(-exp - digits.length) + digits;
+  }
+  const pos = digits.length + exp;
+  let i = Number(digits.slice(0, pos) || "0");
+  const rest = digits.slice(pos);
+  if (rest[0] > "5" || (rest[0] === "5" && /[1-9]/.test(rest.slice(1)))) {
+    i++;
+  } else if (rest[0] === "5" && i % 2 === 1) {
+    i++;
+  }
+  return sign * i;
 }
 
 /**
